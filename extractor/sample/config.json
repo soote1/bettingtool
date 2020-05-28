@@ -1,0 +1,7 @@
+{
+    "producers":"",
+    "consumers":"",
+    "fetchers":"",
+    "seeders":[["extractor.sample.model.caliente_seeder", "CalienteSeeder"]],
+    "listeners":""
+}
