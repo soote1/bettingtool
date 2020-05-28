@@ -1,15 +1,12 @@
 from multiprocessing import Process
-from extractor.sample.model.other_seeder import OtherSeeder
-from extractor.sample.model.caliente_seeder import CalienteSeeder
+from extractor.sample.helpers.worker_factory import WorkerFactory
+from extractor.sample.helpers.config import Config
+from extractor.sample.extractor import Extractor
+import os
 
-processes = []
-worker_types = (CalienteSeeder, OtherSeeder)
+with open(f"{os.path.dirname(__file__)}/config.json") as file:
+    config_str = file.read()
 
-# create processes
-for worker_type in worker_types:
-    worker_instance = worker_type()
-    processes.append(Process(target=worker_instance.run))
-
-# start all processes
-for process in processes:
-    process.start()
+config = Config(config_str)
+extractor = Extractor(config)
+extractor.run()
