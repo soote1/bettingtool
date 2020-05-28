@@ -1,5 +1,5 @@
-from extractor.sample.model.ExtractorConfigKeys import ExtractorConfigKeys
 import json
+from extractor.sample.model.extractor_config_keys import ExtractorConfigKeys
 
 class Extractor:
     def __init__(self, config_str):

@@ -1,6 +1,6 @@
 from multiprocessing import Process
-from extractor.sample.model.OtherSeeder import OtherSeeder
-from extractor.sample.model.CalienteSeeder import CalienteSeeder
+from extractor.sample.model.other_seeder import OtherSeeder
+from extractor.sample.model.caliente_seeder import CalienteSeeder
 
 processes = []
 worker_types = (CalienteSeeder, OtherSeeder)
