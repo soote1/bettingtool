@@ -7,8 +7,11 @@ class Worker:
 
     def run(self, shutdown_event):
         while not shutdown_event.is_set():
-            self.do_work()
-            time.sleep(self.wait_time)
+            try:
+                self.do_work()
+                time.sleep(self.wait_time)
+            except KeyboardInterrupt as error:
+                continue
     
     def do_work(self):
         raise NotImplementedError
