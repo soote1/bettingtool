@@ -3,28 +3,27 @@ import os
 from extractor.sample.helpers.config import Config
 
 class TestConfig:
-    def test_create_config_dict(self):
-        expected_output = {
+    config_file_path = "/home/soote1/projects/bettingtool/extractor/sample/config.json"
+    config_mock = {
             "producers":"",
             "consumers": "",
             "fetchers":"",
             "seeders":[["extractor.sample.model.caliente_seeder", "CalienteSeeder"]],
             "listeners":""
-        }
+    }
 
-        with open("/home/soote1/projects/bettingtool/extractor/sample/config.json") as file:
+    def read_config_from_file(self):
+        with open(self.config_file_path) as file:
             config_str = file.read()
-            
-        config = Config(config_str)
+        return config_str     
 
-        assert expected_output == config.config
+    def test_create_config_dict(self):
+        config = Config(self.read_config_from_file())
 
-    def test_get_value_from_config(self):
-        expected_output = [["extractor.sample.model.caliente_seeder", "CalienteSeeder"]]
+        assert self.config_mock == config.config
 
-        with open("/home/soote1/projects/bettingtool/extractor/sample/config.json") as file:
-            config_str = file.read()
-            
-        config = Config(config_str)
-        output = config.get("seeders")
-        assert expected_output == output
+    def test_get_value_from_config(self):         
+        key = "seeders"   
+        config = Config(self.read_config_from_file())
+        output = config.get(key)
+        assert self.config_mock[key] == output
