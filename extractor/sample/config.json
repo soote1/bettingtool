@@ -1,4 +1,5 @@
 {
+    "wait_time":1,
     "producers":"",
     "consumers":"",
     "fetchers":"",

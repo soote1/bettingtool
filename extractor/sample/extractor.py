@@ -90,7 +90,7 @@ class Extractor:
 
         while True:
             try:
-                time.sleep(1)
+                time.sleep(self.config_helper.get(ExtractorConfigKeys.wait_time()))
             except KeyboardInterrupt as error:
                 self.logger.info("sending shutdown signal to child processes")
                 keyboard_interrupt_event.set()
