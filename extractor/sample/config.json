@@ -3,7 +3,8 @@
     "consumers":"",
     "fetchers":"",
     "seeders":[
-        ["extractor.sample.model.caliente_seeder", "CalienteSeeder"]
+        ["extractor.sample.model.caliente_seeder", "CalienteSeeder", 1],
+        ["extractor.sample.model.other_seeder", "OtherSeeder", 5] 
     ],
     "listeners":""
 }

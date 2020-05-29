@@ -1,4 +1,3 @@
-from multiprocessing import Process
 from extractor.sample.helpers.worker_factory import WorkerFactory
 from extractor.sample.helpers.config import Config
 from extractor.sample.extractor import Extractor
