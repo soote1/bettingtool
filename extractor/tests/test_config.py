@@ -3,7 +3,7 @@ import os
 from extractor.sample.helpers.config import Config
 
 class TestConfig:
-    config_file_path = "/home/soote1/projects/bettingtool/extractor/sample/config.json"
+    config_file_path = f"{os.path.dirname(__file__).replace('tests', 'sample')}/config.json"
     config_mock = {
             "producers":"",
             "consumers": "",
