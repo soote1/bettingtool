@@ -1,8 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
-from extractor.sample.model.seeder import Seeder
-from extractor.sample.model.caliente_seeder_config_keys import CalienteSeederConfigKeys
-from extractor.sample.helpers.caliente_seeder_cache import CalienteSeederCache
+from extractor.sample.workers.seeder import Seeder
+from extractor.sample.config.caliente_seeder_config_keys import CalienteSeederConfigKeys
+from extractor.sample.cache.caliente_seeder_cache import CalienteSeederCache
 
 class CalienteSeeder(Seeder):
     def __init__(self, config):

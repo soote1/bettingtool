@@ -5,7 +5,7 @@
     "fetchers":"",
     "seeders":[
         [
-            "extractor.sample.model.caliente_seeder", 
+            "extractor.sample.workers.caliente_seeder", 
             "CalienteSeeder",
             {
                 "base_href": "https://sports.caliente.mx", 

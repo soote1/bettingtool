@@ -1,5 +1,5 @@
-from extractor.sample.helpers.worker_factory import WorkerFactory
-from extractor.sample.helpers.config import Config
+from extractor.sample.workers.worker_factory import WorkerFactory
+from extractor.sample.config.config import Config
 from extractor.sample.extractor import Extractor
 import os
 

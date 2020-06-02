@@ -1,10 +1,11 @@
 import json
 import logging
 import time
-from extractor.sample.model.extractor_config_keys import ExtractorConfigKeys
-from extractor.sample.helpers.worker_factory import WorkerFactory
-from extractor.sample.helpers.config import Config
 from multiprocessing import Event, Process, get_logger, log_to_stderr
+
+from extractor.sample.config.extractor_config_keys import ExtractorConfigKeys
+from extractor.sample.config.config import Config
+from extractor.sample.workers.worker_factory import WorkerFactory
 
 class Extractor:
     def __init__(self, config_helper):

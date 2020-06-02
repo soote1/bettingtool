@@ -1,7 +1,7 @@
 import pytest
 import os
 import json
-from extractor.sample.helpers.config import Config
+from extractor.sample.config.config import Config
 
 class TestConfig:    
     def test_create_config_dict(self, config_str):

@@ -1,4 +1,4 @@
-from extractor.sample.helpers.cache_client import CacheClient
+from extractor.sample.cache.cache_client import CacheClient
 
 class CalienteSeederCache(CacheClient):
     def __init__(self):
