@@ -4,8 +4,15 @@
     "consumers":"",
     "fetchers":"",
     "seeders":[
-        ["extractor.sample.model.caliente_seeder", "CalienteSeeder", 1],
-        ["extractor.sample.model.other_seeder", "OtherSeeder", 5] 
+        [
+            "extractor.sample.model.caliente_seeder", 
+            "CalienteSeeder",
+            {
+                "base_href": "https://sports.caliente.mx", 
+                "wait_time":3, 
+                "leagues_path":"/es_MX/Futbol"
+            }
+        ]
     ],
     "listeners":""
 }

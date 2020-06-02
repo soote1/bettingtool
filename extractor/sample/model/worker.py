@@ -1,9 +1,15 @@
-from multiprocessing import Event
+from multiprocessing import Event, get_logger
 import time
+import os
+
+from extractor.sample.helpers.cache_client import CacheClient
 
 class Worker:
-    def __init__(self, wait_time):
-        raise NotImplementedError
+    def __init__(self, name, wait_time):
+        self.name = name
+        self.logger = get_logger()
+        self.wait_time = wait_time
+        self.current_state = "new"
 
     def run(self, shutdown_event):
         while not shutdown_event.is_set():
@@ -17,7 +23,7 @@ class Worker:
         raise NotImplementedError
 
     def get_state(self):
-        raise NotImplementedError
+        return self.current_state
 
-    def update_state(self):
-        raise NotImplementedError
+    def update_state(self, state):
+        self.current_state = state
