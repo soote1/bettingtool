@@ -11,6 +11,7 @@ beautifulsoup4 = "*"
 walrus = "*"
 requests = "*"
 lxml = "*"
+pika = "*"
 
 [requires]
 python_version = "3.8"

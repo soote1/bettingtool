@@ -1,7 +1,18 @@
 {
     "wait_time":1,
-    "producers":"",
-    "consumers":"",
+    "consumers":[
+        [
+            "extractor.sample.workers.caliente_url_consumer",
+            "CalienteUrlConsumer",
+            {
+                "host_name":"localhost",
+                "queue_name":"caliente_url_queue",
+                "durable":true,
+                "prefetch_count":1,
+                "wait_time":0
+            }
+        ]
+    ],
     "fetchers":"",
     "seeders":[
         [
@@ -10,7 +21,15 @@
             {
                 "base_href": "https://sports.caliente.mx", 
                 "wait_time":3, 
-                "leagues_path":"/es_MX/Futbol"
+                "leagues_path":"/es_MX/Futbol",
+                "producer_config":
+                {
+                    "host_name":"localhost",
+                    "queue_name":"caliente_url_queue",
+                    "durable":true,
+                    "delivery_mode":2,
+                    "exchange":""
+                }
             }
         ]
     ],

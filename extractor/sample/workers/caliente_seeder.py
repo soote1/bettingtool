@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from extractor.sample.workers.seeder import Seeder
 from extractor.sample.config.caliente_seeder_config_keys import CalienteSeederConfigKeys
 from extractor.sample.cache.caliente_seeder_cache import CalienteSeederCache
+from extractor.sample.workers.caliente_url_producer import CalienteUrlProducer
 
 class CalienteSeeder(Seeder):
     def __init__(self, config):
@@ -10,9 +11,12 @@ class CalienteSeeder(Seeder):
         super().__init__(CalienteSeeder.__name__, self.config[CalienteSeederConfigKeys.WAIT_TIME()])
         self.logger.info(f"intializing {CalienteSeeder.__name__} with {self.config}")
         self.cache = CalienteSeederCache()
-        self.cache.update_state(self.current_state)
+        self.current_state = self.cache.get_state()
+        self.producer_config = self.config[CalienteSeederConfigKeys.PRODUCER_CONFIG()]
+        self.message_producer = CalienteUrlProducer(self.producer_config)
 
     def do_work(self):
+        self.current_state = self.cache.get_state()
         self.logger.info(f"{self.name} - {self.current_state}")
         if self.current_state == "new":
             self.update_state("fetching_leagues")
@@ -24,6 +28,10 @@ class CalienteSeeder(Seeder):
                 self.get_matches()
         elif self.current_state== "ready":
             self.send_odds_link()
+
+    def update_state(self, new_state):
+        self.current_state = new_state
+        self.cache.update_state(self.current_state)
 
     def set_seeder_ready(self):
         self.logger.info("seeder is ready, updating state...")
@@ -70,3 +78,4 @@ class CalienteSeeder(Seeder):
         self.logger.info("fetching odds link from cache")
         match_odds_url = self.cache.get_match()
         self.logger.info(f"sending {match_odds_url}")
+        self.message_producer.send_url(match_odds_url)
