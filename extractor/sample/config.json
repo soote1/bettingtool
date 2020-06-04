@@ -9,7 +9,15 @@
                 "queue_name":"caliente_url_queue",
                 "durable":true,
                 "prefetch_count":1,
-                "wait_time":0
+                "wait_time":5,
+                "producer_config":
+                {
+                    "host_name":"localhost",
+                    "queue_name":"caliente_odds_queue",
+                    "durable":true,
+                    "delivery_mode":2,
+                    "exchange":""
+                }
             }
         ]
     ],
@@ -20,7 +28,7 @@
             "CalienteSeeder",
             {
                 "base_href": "https://sports.caliente.mx", 
-                "wait_time":3, 
+                "wait_time":10, 
                 "leagues_path":"/es_MX/Futbol",
                 "producer_config":
                 {

@@ -11,7 +11,8 @@ class CalienteSeederCache(CacheClient):
         self.state.update(state=new_state)
     
     def get_state(self):
-        return self.state.get("state").decode("utf-8")
+        state = self.state.get("state")
+        return state.decode("utf-8") if not state == None else state
     
     def save_leagues(self, leagues):
         self.leagues = self.client.Array("caliente_leagues")

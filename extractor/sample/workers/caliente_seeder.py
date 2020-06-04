@@ -11,12 +11,12 @@ class CalienteSeeder(Seeder):
         super().__init__(CalienteSeeder.__name__, self.config[CalienteSeederConfigKeys.WAIT_TIME()])
         self.logger.info(f"intializing {CalienteSeeder.__name__} with {self.config}")
         self.cache = CalienteSeederCache()
-        self.current_state = self.cache.get_state()
+        self.current_state = self.get_state()
         self.producer_config = self.config[CalienteSeederConfigKeys.PRODUCER_CONFIG()]
         self.message_producer = CalienteUrlProducer(self.producer_config)
 
     def do_work(self):
-        self.current_state = self.cache.get_state()
+        self.current_state = self.get_state()
         self.logger.info(f"{self.name} - {self.current_state}")
         if self.current_state == "new":
             self.update_state("fetching_leagues")
@@ -28,6 +28,10 @@ class CalienteSeeder(Seeder):
                 self.get_matches()
         elif self.current_state== "ready":
             self.send_odds_link()
+
+    def get_state(self):
+        state = self.cache.get_state()
+        return "new" if self.cache.get_state() == None else state
 
     def update_state(self, new_state):
         self.current_state = new_state

@@ -3,11 +3,12 @@ import pika
 class Producer:
     def __init__(self, config):
         self.config = config
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.config["host_name"]))
-        self.channel = self.connection.channel()
-        self.channel.queue_declare(queue=self.config["queue_name"], durable=self.config["durable"])
+        self.connection = None
+        self.channel = None
 
     def produce(self, message):
+        if self.connection == None:
+            self.connect_to_broker()
         self.channel.basic_publish(
             exchange=self.config["exchange"],
             routing_key=self.config["queue_name"],
@@ -15,5 +16,7 @@ class Producer:
             properties=pika.BasicProperties(delivery_mode=self.config["delivery_mode"],)
         )
 
-    def __del__(self):
-        self.connection.close()
+    def connect_to_broker(self):
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.config["host_name"]))
+        self.channel = self.connection.channel()
+        self.channel.queue_declare(queue=self.config["queue_name"], durable=self.config["durable"])
