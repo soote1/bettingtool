@@ -2,7 +2,7 @@
     "wait_time":1,
     "consumers":[
         [
-            "extractor.sample.workers.caliente_url_consumer",
+            "extractor.sample.caliente.caliente_url_consumer",
             "CalienteUrlConsumer",
             {
                 "host_name":"localhost",
@@ -24,7 +24,7 @@
     "fetchers":"",
     "seeders":[
         [
-            "extractor.sample.workers.caliente_seeder", 
+            "extractor.sample.caliente.caliente_seeder", 
             "CalienteSeeder",
             {
                 "base_href": "https://sports.caliente.mx", 

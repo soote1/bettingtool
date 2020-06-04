@@ -1,6 +1,6 @@
 from extractor.sample.messaging.consumer import Consumer
-from extractor.sample.workers.caliente_fetcher import CalienteFetcher
-from extractor.sample.workers.caliente_odds_producer import CalienteOddsProducer
+from extractor.sample.caliente.caliente_fetcher import CalienteFetcher
+from extractor.sample.caliente.caliente_odds_producer import CalienteOddsProducer
 from multiprocessing import get_logger
 import json
 

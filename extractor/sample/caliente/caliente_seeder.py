@@ -1,9 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
 from extractor.sample.workers.seeder import Seeder
-from extractor.sample.config.caliente_seeder_config_keys import CalienteSeederConfigKeys
-from extractor.sample.cache.caliente_seeder_cache import CalienteSeederCache
-from extractor.sample.workers.caliente_url_producer import CalienteUrlProducer
+from extractor.sample.caliente.caliente_seeder_config_keys import CalienteSeederConfigKeys
+from extractor.sample.caliente.caliente_seeder_cache import CalienteSeederCache
+from extractor.sample.caliente.caliente_url_producer import CalienteUrlProducer
 
 class CalienteSeeder(Seeder):
     def __init__(self, config):
