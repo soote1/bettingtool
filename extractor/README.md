@@ -22,9 +22,9 @@ The extractor is configurable, it uses a json file prepare the set of workers.
 ```
 
 ## Dependencies
-* pytest: unit tests library
-* beautifulsoup4: web crawling library
-* walrus: redis library
-* requests = "*"
-* lxml = "*"
-* pika = "*"
+* pytest: unit tests
+* beautifulsoup4: web crawling
+* walrus: redis client
+* requests: http communication
+* lxml: parser used by beautifoulsoup
+* pika: rabbitmq client
