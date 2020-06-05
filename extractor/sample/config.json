@@ -10,6 +10,7 @@
                 "durable":true,
                 "prefetch_count":1,
                 "wait_time":5,
+                "decode_format":"utf-8",
                 "producer_config":
                 {
                     "host_name":"localhost",
@@ -17,6 +18,18 @@
                     "durable":true,
                     "delivery_mode":2,
                     "exchange":""
+                },
+                "fetcher_config":
+                {
+                    "parser":"lxml",
+                    "correct_score_game_container_type":"table",
+                    "correct_score_game_container_target":{"class":"correct-score"},
+                    "odds_container_type":"button",
+                    "odds_container_target":{"class":"price"},
+                    "odd_label_target":"title",
+                    "odd_value_container_type":"span",
+                    "odd_value_container_target":{"class":"price us"},
+                    "game_type":"correct_score"
                 }
             }
         ]
@@ -30,6 +43,16 @@
                 "base_href": "https://sports.caliente.mx", 
                 "wait_time":10, 
                 "leagues_path":"/es_MX/Futbol",
+                "leagues_container_type":"div",
+                "leagues_container_target":{"class":"coupon-builder-for-sport"},
+                "league_url_type":"a",
+                "league_url_target":"href",
+                "matches_container_type":"tr",
+                "matches_container_target":{"class":"mkt_content"},
+                "odds_container_type":"a",
+                "odds_container_target":{"title":"Clic aquí para más apuestas"},
+                "odds_link_target":"href",
+                "html_parser":"lxml",
                 "producer_config":
                 {
                     "host_name":"localhost",
@@ -37,6 +60,15 @@
                     "durable":true,
                     "delivery_mode":2,
                     "exchange":""
+                },
+                "cache_config":
+                {
+                    "leagues_key":"caliente_seeder_leagues",
+                    "matches_key":"caliente_seeder_matches",
+                    "state_key":"caliente_seeder_state",
+                    "state_value_key":"value",
+                    "initial_state":{"value":"new"},
+                    "decode_format":"utf-8"
                 }
             }
         ]

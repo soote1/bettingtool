@@ -1,4 +1,4 @@
-class ExtractorConfigKeys(object):
+class ConfigKeys(object):
     @staticmethod
     def producers():
         return "producers"
@@ -22,3 +22,15 @@ class ExtractorConfigKeys(object):
     @staticmethod
     def wait_time():
         return "wait_time"
+
+    @staticmethod
+    def worker_module():
+        return 0
+    
+    @staticmethod
+    def worker_class():
+        return 1
+    
+    @staticmethod 
+    def worker_config():
+        return 2

@@ -3,64 +3,52 @@ import logging
 import time
 from multiprocessing import Event, Process, get_logger, log_to_stderr
 
-from extractor.sample.config.extractor_config_keys import ExtractorConfigKeys
-from extractor.sample.config.config import Config
+from extractor.sample.config.config_keys import ConfigKeys
+from extractor.sample.config.config_helper import ConfigHelper
 from extractor.sample.workers.worker_factory import WorkerFactory
 
 class Extractor:
     def __init__(self, config_helper):
         """
-        Initialize logger and attributes
+        Initialize extractor instance.
         """
         log_to_stderr()
         self.logger = get_logger()
         self.logger.setLevel(logging.INFO)
         self.consumers = []
         self.seeders = []
-        self.fetchers = []
         self.processes = []
         self.config_helper = config_helper
         self.load_config()
     
     def load_config(self):
         """
-        Parse config string into a dictionary and initialize the objects
+        Creates workers instances.
         """
         self.logger.info(f"Loading extractor config {self.config_helper.config}")
         self.load_consumers()
         self.load_seeders()
-        self.load_fetchers()
 
     def load_seeders(self):
         """
-        Prepare all seeders
+        Creates seeder instances.
         """
-        seeder_classes = self.config_helper.get(ExtractorConfigKeys.seeders())
-        for seeder in seeder_classes:
-            self.seeders.append(WorkerFactory.create_instance(seeder[0], seeder[1], seeder[2]))
-
-    def load_fetchers(self):
-        """
-        Prepare all fetchers
-        """
-        fetcher_classes = self.config_helper.get(ExtractorConfigKeys.fetchers())
-        for fetcher in fetcher_classes:
-            self.fetchers.append(WorkerFactory.create_instance(fetcher[0], fetcher[1], fetcher[2]))
+        seeder_classes = self.config_helper.get(ConfigKeys.seeders())
+        self.seeders = [WorkerFactory.create_instance(seeder[ConfigKeys.worker_module()], seeder[ConfigKeys.worker_class()], seeder[ConfigKeys.worker_config()]) for seeder in seeder_classes]
 
     def load_consumers(self):
         """
-        Prepare all consumers
+        Creates consumer instances.
         """
-        consumer_classes = self.config_helper.get(ExtractorConfigKeys.consumers())
-        for consumer in consumer_classes:
-            self.consumers.append(WorkerFactory.create_instance(consumer[0], consumer[1], consumer[2]))
+        consumer_classes = self.config_helper.get(ConfigKeys.consumers())
+        self.consumers = [WorkerFactory.create_instance(consumer[ConfigKeys.worker_module()], consumer[ConfigKeys.worker_class()], consumer[ConfigKeys.worker_config()]) for consumer in consumer_classes]
     
     def run(self):
         """
-        Run all process
+        Runs all process and stop them when keyboard interrupt signal is received.
         """
         keyboard_interrupt_event = Event()
-        worker_instances = self.consumers + self.fetchers + self.seeders
+        worker_instances = self.consumers + self.seeders
         print(worker_instances)
         # create processes
         for worker_instance in worker_instances:
@@ -72,7 +60,7 @@ class Extractor:
 
         while True:
             try:
-                time.sleep(self.config_helper.get(ExtractorConfigKeys.wait_time()))
+                time.sleep(self.config_helper.get(ConfigKeys.wait_time()))
             except KeyboardInterrupt as error:
                 self.logger.info("sending shutdown signal to child processes")
                 keyboard_interrupt_event.set()

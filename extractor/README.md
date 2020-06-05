@@ -29,5 +29,5 @@ The extractor project supports pipenv for dependency management.
 * beautifulsoup4: web crawling
 * walrus: redis client
 * requests: http communication
-* lxml: parser used by beautifoulsoup
+* lxml: parser used by beautifulsoup
 * pika: rabbitmq client

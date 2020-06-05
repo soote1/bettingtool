@@ -6,12 +6,19 @@ from extractor.sample.cache.cache_client import CacheClient
 
 class Worker:
     def __init__(self, name, wait_time):
+        """
+        Initialize worker.
+        """
         self.name = name
         self.logger = get_logger()
         self.wait_time = wait_time
         self.current_state = "new"
 
     def run(self, shutdown_event):
+        """
+        Calls do_work method inside an infinite loop and 
+        listens for a shutdown event to break the loop.
+        """
         while not shutdown_event.is_set():
             try:
                 self.do_work()
@@ -21,9 +28,3 @@ class Worker:
     
     def do_work(self):
         raise NotImplementedError
-
-    def get_state(self):
-        return self.current_state
-
-    def update_state(self, state):
-        self.current_state = state
