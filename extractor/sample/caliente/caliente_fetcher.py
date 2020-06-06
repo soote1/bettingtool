@@ -16,24 +16,35 @@ class CalienteFetcher(Fetcher):
         self.load_config(config)
 
     def load_config(self, config):
-        self.logger.info(f"intializing {CalienteFetcher.__name__} with {config}")
-        self.parser = config[CalienteFetcherConfigKeys.parser()]
-        self.correct_score_game_container_type = config[CalienteFetcherConfigKeys.correct_score_game_container_type()]
-        self.correct_score_game_container_target = config[CalienteFetcherConfigKeys.correct_score_game_container_target()]
-        self.odds_container_type = config[CalienteFetcherConfigKeys.odds_container_type()]
-        self.odds_container_target = config[CalienteFetcherConfigKeys.odds_container_target()]
-        self.odd_label_target = config[CalienteFetcherConfigKeys.odd_label_target()]
-        self.odd_value_container_type = config[CalienteFetcherConfigKeys.odd_value_container_type()]
-        self.odd_value_container_taget = config[CalienteFetcherConfigKeys.odd_value_container_target()]
-        self.game_type = config[CalienteFetcherConfigKeys.game_type()]
+        try:
+            self.logger.info(f"intializing {CalienteFetcher.__name__} with {config}")
+            self.parser = config[CalienteFetcherConfigKeys.parser()]
+            self.correct_score_game_container_type = config[CalienteFetcherConfigKeys.correct_score_game_container_type()]
+            self.correct_score_game_container_target = config[CalienteFetcherConfigKeys.correct_score_game_container_target()]
+            self.odds_container_type = config[CalienteFetcherConfigKeys.odds_container_type()]
+            self.odds_container_target = config[CalienteFetcherConfigKeys.odds_container_target()]
+            self.odd_label_target = config[CalienteFetcherConfigKeys.odd_label_target()]
+            self.odd_value_container_type = config[CalienteFetcherConfigKeys.odd_value_container_type()]
+            self.odd_value_container_taget = config[CalienteFetcherConfigKeys.odd_value_container_target()]
+            self.game_type = config[CalienteFetcherConfigKeys.game_type()]
+        except Exception as error:
+            self.logger.error(f"invalid configuration for {CalienteFetcher.__name__} class")
+            self.logger.error(error)
+            raise error
 
     def fetch(self, url):
         """
         This method retrieves the content from a given url and returns
         the result from parse_results method.
         """
-        self.logger.info(f"{self.name} - fetching odds page from {url}")
-        odds_page = requests.get(url).text
+        try:
+            self.logger.info(f"{self.name} - fetching odds page from {url}")
+            odds_page = requests.get(url).text
+        except Exception as error:
+            self.logger.error(f"problems found while trying to get the data from {url} ... waiting for next attempt")
+            self.logger.error(error)
+            return None
+
         return self.parse_results(url, odds_page)
         
 
@@ -44,9 +55,9 @@ class CalienteFetcher(Fetcher):
         includes the list of odds found and related metadata. It returns None if there is an 
         error while trying to extract the data from the beautifulsoup object.
         """
-        self.logger.info(f"{self.name} - parsing results")
-        soup = BeautifulSoup(odds_page, self.parser)
         try:
+            self.logger.info(f"{self.name} - parsing results")
+            soup = BeautifulSoup(odds_page, self.parser)
             correct_score_table = soup.find(self.correct_score_game_container_type, self.correct_score_game_container_target)
             odds_container = correct_score_table.find_all(self.odds_container_type, self.odds_container_target)
             odds = []

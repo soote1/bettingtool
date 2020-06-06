@@ -15,4 +15,4 @@ class CalienteUrlProducer(Producer):
         This method calls the inherited produce method to send a new url
         to the configured queue.
         """
-        self.produce(url)
+        return self.produce(url)

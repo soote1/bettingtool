@@ -20,7 +20,7 @@ class Worker:
         while not shutdown_event.is_set():
             try:
                 self.do_work()
-                time.sleep(self.wait_time)
+                shutdown_event.wait(self.wait_time)
             except KeyboardInterrupt as error:
                 continue
     

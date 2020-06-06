@@ -15,23 +15,33 @@ class Consumer(Worker):
         self.connect_to_broker()
     
     def load_consumer_config(self, config):
-        self.logger.info(f"initializing consumer with {config}")
-        self.host_name = config[MessagingConfigKeys.host_name()]
-        self.durable = config[MessagingConfigKeys.durable()]
-        self.queue_name = config[MessagingConfigKeys.queue_name()]
-        self.prefetch_count = config[MessagingConfigKeys.prefetch_count()]
-        self.wait_time = config[MessagingConfigKeys.wait_time()]
+        try:
+            self.logger.info(f"initializing consumer with {config}")
+            self.host_name = config[MessagingConfigKeys.host_name()]
+            self.durable = config[MessagingConfigKeys.durable()]
+            self.queue_name = config[MessagingConfigKeys.queue_name()]
+            self.prefetch_count = config[MessagingConfigKeys.prefetch_count()]
+            self.wait_time = config[MessagingConfigKeys.wait_time()]
+        except Exception as error:
+            self.logger.error(f"invalid configuration for {Consumer.__name__} class")
+            self.logger.error(error)
+            raise error
 
     def connect_to_broker(self):
         """
         Establishes the connection with the message broker
         using the consumer configuration.
         """
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.host_name))
-        self.channel = self.connection.channel()
-        self.channel.queue_declare(queue=self.queue_name, durable=self.durable)
-        self.channel.basic_qos(prefetch_count=self.prefetch_count)
-        self.channel.basic_consume(queue=self.queue_name, on_message_callback=self.receive)
+        try:
+            self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.host_name))
+            self.channel = self.connection.channel()
+            self.channel.queue_declare(queue=self.queue_name, durable=self.durable)
+            self.channel.basic_qos(prefetch_count=self.prefetch_count)
+            self.channel.basic_consume(queue=self.queue_name, on_message_callback=self.receive)
+        except Exception as error:
+            self.logger.error("problems found while trying to connect with rabbitmq")
+            self.logger.error(error)
+            raise error
 
     def run(self, shutdown_event):
         """

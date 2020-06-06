@@ -40,7 +40,7 @@
             "CalienteSeeder",
             {
                 "base_href": "https://sports.caliente.mx", 
-                "wait_time":10, 
+                "wait_time":1, 
                 "leagues_path":"/es_MX/Futbol",
                 "leagues_container_type":"div",
                 "leagues_container_target":{"class":"coupon-builder-for-sport"},

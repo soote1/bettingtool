@@ -1,4 +1,5 @@
 from multiprocessing import get_logger
+
 from extractor.sample.cache.cache_client import CacheClient
 from extractor.sample.workers.worker import Worker
 
@@ -14,13 +15,19 @@ class CacheCleaner(Worker):
 
     def load_config(self, config):
         """
-        loads configuration from dictionary
+        Loads configuration from dictionary
         """
-        self.wait_time = config["wait_time"]
+        try:
+            self.logger.info(f"loading {CacheCleaner.__name__} with {config}")
+            self.wait_time = config["wait_time"]
+        except Exception as error:
+            self.logger.error(f"invalid configuration for {CacheCleaner.__name__} class")
+            self.logger.error(error)
+            raise error
 
     def do_work(self):
         """
-        tells the cache client to flush all the keys in the server
+        Tells the cache client to flush all the keys in the server
         """
         self.logger.info("flushing all keys in cache server")
         self.cache_client.clean_cache()

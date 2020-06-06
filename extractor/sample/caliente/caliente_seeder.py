@@ -20,22 +20,28 @@ class CalienteSeeder(Seeder):
         self.message_producer = CalienteUrlProducer(self.producer_config)
 
     def load_config(self, config):
-        self.logger.info(f"intializing {CalienteSeeder.__name__} with {config}")
-        self.base_href = config[CalienteSeederConfigKeys.base_href()]
-        self.leagues_url = f"{self.base_href}{config[CalienteSeederConfigKeys.leagues_path()]}"
-        self.leagues_container_type = config[CalienteSeederConfigKeys.leagues_container_type()]
-        self.leagues_container_target = config[CalienteSeederConfigKeys.leagues_container_target()]
-        self.league_url_type = config[CalienteSeederConfigKeys.league_url_type()]
-        self.league_url_target = config[CalienteSeederConfigKeys.league_url_target()]
-        self.matches_container_type = config[CalienteSeederConfigKeys.matches_container_type()]
-        self.matches_container_target = config[CalienteSeederConfigKeys.matches_container_target()]
-        self.odds_container_type = config[CalienteSeederConfigKeys.odds_container_type()]
-        self.odds_container_target = config[CalienteSeederConfigKeys.odds_container_target()]
-        self.odds_link_target = config[CalienteSeederConfigKeys.odds_link_target()]
-        self.html_parser = config[CalienteSeederConfigKeys.html_parser()]
-        self.wait_time = config[CalienteSeederConfigKeys.wait_time()]
-        self.producer_config = config[CalienteSeederConfigKeys.producer_config()]
-        self.cache_config = config[CalienteSeederConfigKeys.cache_config()]
+        try:
+            self.logger.info(f"intializing {CalienteSeeder.__name__} with {config}")
+            self.base_href = config[CalienteSeederConfigKeys.base_href()]
+            self.leagues_url = f"{self.base_href}{config[CalienteSeederConfigKeys.leagues_path()]}"
+            self.leagues_container_type = config[CalienteSeederConfigKeys.leagues_container_type()]
+            self.leagues_container_target = config[CalienteSeederConfigKeys.leagues_container_target()]
+            self.league_url_type = config[CalienteSeederConfigKeys.league_url_type()]
+            self.league_url_target = config[CalienteSeederConfigKeys.league_url_target()]
+            self.matches_container_type = config[CalienteSeederConfigKeys.matches_container_type()]
+            self.matches_container_target = config[CalienteSeederConfigKeys.matches_container_target()]
+            self.odds_container_type = config[CalienteSeederConfigKeys.odds_container_type()]
+            self.odds_container_target = config[CalienteSeederConfigKeys.odds_container_target()]
+            self.odds_link_target = config[CalienteSeederConfigKeys.odds_link_target()]
+            self.html_parser = config[CalienteSeederConfigKeys.html_parser()]
+            self.wait_time = config[CalienteSeederConfigKeys.wait_time()]
+            self.producer_config = config[CalienteSeederConfigKeys.producer_config()]
+            self.cache_config = config[CalienteSeederConfigKeys.cache_config()]
+        except Exception as error:
+            self.logger.error(f"invalid configuration for {CalienteSeeder.__name__}")
+            self.logger.error(error)
+            raise error
+
 
     def do_work(self):
         """
@@ -47,8 +53,10 @@ class CalienteSeeder(Seeder):
         if self.current_state == CalienteSeederState.NEW():
             self.update_state(CalienteSeederState.FETCHING_LEAGUES())
             self.get_leagues()
+        elif self.current_state == CalienteSeederState.FETCHING_LEAGUES():
+            self.get_leagues()
         elif self.current_state == CalienteSeederState.FETCHING_MATCHES():
-            if(self.cache.get_pending_leagues() == 0):
+            if self.cache.get_pending_leagues() == 0:
                 self.set_seeder_ready()
             else:
                 self.get_matches()
@@ -85,15 +93,27 @@ class CalienteSeeder(Seeder):
         and updates the current seeder's state.
         """
         self.logger.info(f"fetching leagues' URLs from {self.leagues_url}")
-        football_leagues_page = requests.get(self.leagues_url).text
-        soup = BeautifulSoup(football_leagues_page, self.html_parser)
-        league_url_elements = soup.find(self.leagues_container_type, self.leagues_container_target).findAll(self.league_url_type)
-        league_urls = []
-        for league_url_element in league_url_elements:
-            url = league_url_element[self.league_url_target]
-            name = league_url_element.text
-            league_urls.append(f"{self.base_href}{url}")
-            self.logger.info(f"league name: {name} url: {url}")
+        try:
+            football_leagues_page = requests.get(self.leagues_url).text
+        except Exception as error:
+            self.logger.error("problems found while making the http request... waiting for next attempt")
+            self.logger.error(error)
+            return
+
+        try:
+            soup = BeautifulSoup(football_leagues_page, self.html_parser)
+            league_urls_container = soup.find(self.leagues_container_type, self.leagues_container_target)
+            league_url_elements = league_urls_container.findAll(self.league_url_type)
+            league_urls = []
+            for league_url_element in league_url_elements:
+                url = league_url_element[self.league_url_target]
+                name = league_url_element.text
+                league_urls.append(f"{self.base_href}{url}")
+                self.logger.info(f"league name: {name} url: {url}")
+        except Exception as error:
+            self.logger.error(f"problems found while trying to extract the data from the dom... waiting for next attempt")
+            self.logger.error(error)
+            return
 
         self.logger.info(f"saving leagues' URLs")
         self.cache.save_leagues(league_urls)
@@ -108,20 +128,40 @@ class CalienteSeeder(Seeder):
         """
         url = self.cache.get_league()
         if url == None:
+            self.logger.info("no soccer match url available, updating seeder state and waiting for next attempt")
             self.set_seeder_ready()
             return
 
-        self.logger.info(f"fetching odds for all matches in league {url}")
-        league_matches_page = requests.get(url).text
-        soup = BeautifulSoup(league_matches_page, self.html_parser)
-        matches_table = soup.find_all(self.matches_container_type, self.matches_container_target)
-        match_odds_list = []
-        for match in matches_table:
-            full_bets_link = match.find(self.odds_container_type, self.odds_container_target)[self.odds_link_target]
-            match_odds_list.append(f"{self.base_href}{full_bets_link}")
-            self.logger.info(f"bets page link: {full_bets_link}")
-        self.logger.info("saving odds' links")
-        self.cache.save_match_odds(url, match_odds_list)
+        try:
+            league_matches_page = requests.get(url).text
+        except Exception as error:
+            self.logger.error("problems found while making the http request... waiting for next attempt")
+            self.logger.error(error)
+            return
+
+        try:
+            self.logger.info(f"fetching odds for all matches in league {url}")
+            soup = BeautifulSoup(league_matches_page, self.html_parser)
+            matches_table = soup.find_all(self.matches_container_type, self.matches_container_target)
+            match_odds_list = []
+            for match in matches_table:
+                full_bets_link = match.find(self.odds_container_type, self.odds_container_target)[self.odds_link_target]
+                match_odds_list.append(f"{self.base_href}{full_bets_link}")
+                self.logger.info(f"bets page link: {full_bets_link}")
+        except Exception as error:
+            self.logger.error(f"problems found while trying to extract the data from the dom object... waiting for next attempt")
+            self.logger.error(error)
+            return
+
+        self.save_match_odds_urls(match_odds_list)
+
+    def save_match_odds_urls(self, match_odds_urls):
+        self.logger.info("saving odds' links in cache server")
+        self.cache.save_match_odds(match_odds_urls)
+
+    def get_match_url(self):
+        self.logger.info("fetching odds link from cache")
+        return self.cache.get_match()
 
     def send_odds_link(self):
         """
@@ -129,7 +169,5 @@ class CalienteSeeder(Seeder):
         send the url to the corresponding queue so that it can be used
         by a fetcher instance.
         """
-        self.logger.info("fetching odds link from cache")
-        match_odds_url = self.cache.get_match()
-        self.logger.info(f"sending {match_odds_url}")
-        self.message_producer.send_url(match_odds_url)
+        match_url = self.get_match_url()
+        return self.message_producer.send_url(match_url)

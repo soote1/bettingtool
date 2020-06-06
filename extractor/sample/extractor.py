@@ -21,15 +21,22 @@ class Extractor:
         self.processes = []
         self.config_helper = config_helper
         self.load_config()
+
     
     def load_config(self):
         """
         Creates workers instances.
         """
-        self.logger.info(f"Loading extractor config {self.config_helper.config}")
-        self.load_consumers()
-        self.load_seeders()
-        self.load_tools()
+        try:
+            self.logger.info(f"Loading extractor config {self.config_helper.config}")
+            self.load_consumers()
+            self.load_seeders()
+            self.load_tools()
+        except Exception as error:
+            self.logger.error(f"Invalid configuration for {Extractor.__name__} class")
+            self.logger.error(error)
+            raise error
+
 
     def load_seeders(self):
         """

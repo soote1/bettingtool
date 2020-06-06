@@ -14,18 +14,31 @@ class CalienteSeederCache(CacheClient):
         self.load_keys()
 
     def load_config(self, config):
-        self.logger.info(f"initializing {CalienteSeederCache.__name__} with {config}")
-        self.leagues_key = config[CalienteCacheKeys.leagues_key()]
-        self.matches_key = config[CalienteCacheKeys.matches_key()]
-        self.state_key = config[CalienteCacheKeys.state_key()]
-        self.state_value_key = config[CalienteCacheKeys.state_value_key()]
-        self.initial_state = config[CalienteCacheKeys.initial_state()]
-        self.decode_format = config[CalienteCacheKeys.decode_format()]
+        try:
+            self.logger.info(f"initializing {CalienteSeederCache.__name__} with {config}")
+            self.leagues_key = config[CalienteCacheKeys.leagues_key()]
+            self.matches_key = config[CalienteCacheKeys.matches_key()]
+            self.state_key = config[CalienteCacheKeys.state_key()]
+            self.state_value_key = config[CalienteCacheKeys.state_value_key()]
+            self.initial_state = config[CalienteCacheKeys.initial_state()]
+            self.decode_format = config[CalienteCacheKeys.decode_format()]
+        except Exception as error:
+            self.logger.error(f"invalid configuration for {CalienteSeederCache.__name__} class")
+            self.logger.error(error)
+            raise error
 
     def load_keys(self):
-        self.leagues = self.client.Array(self.leagues_key)
-        self.matches = self.client.Array(self.matches_key)
-        self.state = self.client.Hash(self.state_key)
+        """
+        Creates the keys to represent caliente seeder state and pending work
+        """
+        try:
+            self.leagues = self.client.Array(self.leagues_key)
+            self.matches = self.client.Array(self.matches_key)
+            self.state = self.client.Hash(self.state_key)
+        except Exception as error:
+            self.logger.error("problem while creating caliente seeder keys in cache server")
+            self.logger.error(error)
+            raise error
 
     def update_state(self, new_state):
         """
@@ -38,7 +51,7 @@ class CalienteSeederCache(CacheClient):
         Retrieves seeder's state from the cache server.
         """
         state = self.state.get(self.state_value_key)
-        return state.decode(self.decode_format) if not state == None else state
+        return state if state == None else state.decode(self.decode_format)
     
     def save_leagues(self, leagues):
         """
@@ -54,7 +67,7 @@ class CalienteSeederCache(CacheClient):
         league = self.leagues.pop() 
         return league if league == None else league.decode(self.decode_format)
 
-    def save_match_odds(self, league, match_odds_list):
+    def save_match_odds(self, match_odds_list):
         """
         Saves the urls for all the matches on a given league in the cache server.
         """
@@ -64,7 +77,8 @@ class CalienteSeederCache(CacheClient):
         """
         Retrieves a random match url from the cache server.
         """
-        return self.matches.pop().decode(self.decode_format)
+        match = self.matches.pop()
+        return match if match == None else match.decode(self.decode_format)
 
     def get_pending_leagues(self):
         """
