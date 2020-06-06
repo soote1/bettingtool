@@ -17,6 +17,7 @@ class Extractor:
         self.logger.setLevel(logging.INFO)
         self.consumers = []
         self.seeders = []
+        self.tools = []
         self.processes = []
         self.config_helper = config_helper
         self.load_config()
@@ -28,31 +29,39 @@ class Extractor:
         self.logger.info(f"Loading extractor config {self.config_helper.config}")
         self.load_consumers()
         self.load_seeders()
+        self.load_tools()
 
     def load_seeders(self):
         """
         Creates seeder instances.
         """
-        seeder_classes = self.config_helper.get(ConfigKeys.seeders())
-        self.seeders = [WorkerFactory.create_instance(seeder[ConfigKeys.worker_module()], seeder[ConfigKeys.worker_class()], seeder[ConfigKeys.worker_config()]) for seeder in seeder_classes]
+        seeders_configurations = self.config_helper.get(ConfigKeys.seeders())
+        self.seeders = WorkerFactory.create_instances(seeders_configurations)
 
     def load_consumers(self):
         """
         Creates consumer instances.
         """
-        consumer_classes = self.config_helper.get(ConfigKeys.consumers())
-        self.consumers = [WorkerFactory.create_instance(consumer[ConfigKeys.worker_module()], consumer[ConfigKeys.worker_class()], consumer[ConfigKeys.worker_config()]) for consumer in consumer_classes]
+        consumers_configurations = self.config_helper.get(ConfigKeys.consumers())
+        self.consumers = WorkerFactory.create_instances(consumers_configurations)
     
+    def load_tools(self):
+        """
+        Creates tools instances.
+        """
+        tools_configurations = self.config_helper.get(ConfigKeys.tools())
+        self.tools = WorkerFactory.create_instances(tools_configurations)
+
     def run(self):
         """
-        Runs all process and stop them when keyboard interrupt signal is received.
+        Starts all processes and stop them when keyboard interrupt signal is received.
         """
         keyboard_interrupt_event = Event()
-        worker_instances = self.consumers + self.seeders
-        print(worker_instances)
+        worker_instances = self.consumers + self.seeders + self.tools
         # create processes
         for worker_instance in worker_instances:
-            self.processes.append(Process(target=worker_instance.run, args=(keyboard_interrupt_event,)))
+            process = Process(target=worker_instance.run, args=(keyboard_interrupt_event,))
+            self.processes.append(process)
 
         # start all processes
         for process in self.processes:

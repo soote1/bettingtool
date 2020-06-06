@@ -2,8 +2,6 @@ from multiprocessing import Event, get_logger
 import time
 import os
 
-from extractor.sample.cache.cache_client import CacheClient
-
 class Worker:
     def __init__(self, name, wait_time):
         """

@@ -34,7 +34,6 @@
             }
         ]
     ],
-    "fetchers":"",
     "seeders":[
         [
             "extractor.sample.caliente.caliente_seeder", 
@@ -73,5 +72,13 @@
             }
         ]
     ],
-    "listeners":""
+    "tools":[
+        [
+            "extractor.sample.workers.cache_cleaner",
+            "CacheCleaner",
+            {
+                "wait_time":86400
+            }
+        ]
+    ]
 }
