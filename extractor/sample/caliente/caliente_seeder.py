@@ -107,6 +107,10 @@ class CalienteSeeder(Seeder):
         urls in the cache server and updates the current seeder's state.
         """
         url = self.cache.get_league()
+        if url == None:
+            self.set_seeder_ready()
+            return
+
         self.logger.info(f"fetching odds for all matches in league {url}")
         league_matches_page = requests.get(url).text
         soup = BeautifulSoup(league_matches_page, self.html_parser)

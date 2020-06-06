@@ -51,7 +51,8 @@ class CalienteSeederCache(CacheClient):
         """
         Retrieves a random league url from the cache server.
         """
-        return self.leagues.pop().decode(self.decode_format)
+        league = self.leagues.pop() 
+        return league if league == None else league.decode(self.decode_format)
 
     def save_match_odds(self, league, match_odds_list):
         """
