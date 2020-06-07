@@ -1,8 +1,21 @@
-from walrus import *
 import os
-
-from extractor.sample.cache.cache_client_config_keys import CacheClientConfigkeys
+import json
 from multiprocessing import get_logger
+
+from walrus import Walrus
+
+class CacheClientConfigkeys:
+    @staticmethod
+    def host():
+        return "host"
+
+    @staticmethod
+    def port():
+        return "port"
+
+    @staticmethod
+    def db():
+        return "db"
 
 class CacheClient:
     def __init__(self):
@@ -10,7 +23,7 @@ class CacheClient:
         Loads the configuration from the json file and then creates the redis client
         """
         self.logger = get_logger()
-        config = self.get_config_from_file("/config.json")
+        config = self.get_config_from_file("/cache_config.json")
         self.load_client_config(config)
         self.client = Walrus(host=self.host, port=self.port, db=self.db)
     
