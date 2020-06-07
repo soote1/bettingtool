@@ -12,9 +12,9 @@ class CalienteSeeder(Seeder):
         """
         Initialize seeder instance.
         """
-        self.logger = get_logger()
+        super().__init__(config[CalienteSeederConfigKeys.wait_time()])
         self.load_config(config)
-        super().__init__(CalienteSeeder.__name__, self.wait_time)
+        self.logger = get_logger()
         self.cache = CalienteSeederCache(self.cache_config)
         self.current_state = self.get_state()
         self.message_producer = CalienteUrlProducer(self.producer_config)
@@ -34,7 +34,6 @@ class CalienteSeeder(Seeder):
             self.odds_container_target = config[CalienteSeederConfigKeys.odds_container_target()]
             self.odds_link_target = config[CalienteSeederConfigKeys.odds_link_target()]
             self.html_parser = config[CalienteSeederConfigKeys.html_parser()]
-            self.wait_time = config[CalienteSeederConfigKeys.wait_time()]
             self.producer_config = config[CalienteSeederConfigKeys.producer_config()]
             self.cache_config = config[CalienteSeederConfigKeys.cache_config()]
         except Exception as error:
@@ -49,7 +48,7 @@ class CalienteSeeder(Seeder):
         depending on the current seeder's state.
         """
         self.current_state = self.get_state()
-        self.logger.info(f"{self.name} - {self.current_state}")
+        self.logger.info(f"{CalienteSeeder.__name__} - {self.current_state}")
         if self.current_state == CalienteSeederState.NEW():
             self.update_state(CalienteSeederState.FETCHING_LEAGUES())
             self.get_leagues()

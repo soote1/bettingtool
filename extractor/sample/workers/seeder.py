@@ -1,5 +1,11 @@
-from extractor.sample.workers.worker import Worker
+from extractor.sample.workers.timed_worker import TimedWorker
 
-class Seeder(Worker):
-    def __init__(self, name, wait_time):
-        super().__init__(name, wait_time)
+class Seeder(TimedWorker):
+    """
+    Abstract class to represent seeder worker type.
+    """
+    def __init__(self, wait_time):
+        """
+        Initialize seeder instance.
+        """
+        super().__init__(wait_time)

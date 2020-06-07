@@ -11,7 +11,6 @@ class Consumer(Worker):
         """
         self.logger = get_logger()
         self.load_consumer_config(config)
-        super().__init__(name, self.wait_time)
         self.connect_to_broker()
     
     def load_consumer_config(self, config):
@@ -37,7 +36,7 @@ class Consumer(Worker):
             self.channel = self.connection.channel()
             self.channel.queue_declare(queue=self.queue_name, durable=self.durable)
             self.channel.basic_qos(prefetch_count=self.prefetch_count)
-            self.channel.basic_consume(queue=self.queue_name, on_message_callback=self.receive)
+            self.channel.basic_consume(queue=self.queue_name, on_message_callback=self.do_work)
         except Exception as error:
             self.logger.error("problems found while trying to connect with rabbitmq")
             self.logger.error(error)
@@ -53,7 +52,7 @@ class Consumer(Worker):
         except KeyboardInterrupt as error:
             self.channel.close()
 
-    def receive(self, ch, method, properties, body):
+    def do_work(self, ch, method, properties, body):
         """
         Abstract method to be implemented by each specific consumer.
         This is the signature for the pika client's on_message_callback method.

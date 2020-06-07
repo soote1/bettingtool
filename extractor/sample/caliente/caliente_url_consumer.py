@@ -30,7 +30,7 @@ class CalienteUrlConsumer(Consumer):
             self.logger.error(error)
             raise error
 
-    def receive(self, ch, method, properties, body):
+    def do_work(self, ch, method, properties, body):
         """
         This method is called when a message is received in the configured queue.
         It tells the fetcher to process the url and waits for the result. If the
@@ -39,13 +39,16 @@ class CalienteUrlConsumer(Consumer):
         """
         self.logger.info(f"received new message with body => {body}")
         odds = self.get_odds_from_fetcher(body.decode(self.decode_format))
-        if not odds == None:
+
+        if odds == None:
+            self.logger.info(f"no odds found for {body}")
+        else:            
             odds_sent = self.send_odds(odds)
             if odds_sent:
                 self.logger.info("message sent... removing from queue")
-                ch.basic_ack(delivery_tag=method.delivery_tag)
             else:
                 self.logger.info("the message couldn't be delivered to the queue... keeping in it for next attempt")
+        ch.basic_ack(delivery_tag=method.delivery_tag)
 
     def get_odds_from_fetcher(self, url):
         """

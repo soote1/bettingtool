@@ -1,29 +1,16 @@
 from multiprocessing import get_logger
 
 from extractor.sample.cache.cache_client import CacheClient
-from extractor.sample.workers.worker import Worker
+from extractor.sample.workers.timed_worker import TimedWorker
 
-class CacheCleaner(Worker):
+class CacheCleaner(TimedWorker):
     def __init__(self, config):
         """
         Initialize cache cleaner instance
         """
+        super().__init__(config["wait_time"])
         self.logger = get_logger()
-        self.load_config(config)
-        super().__init__(CacheCleaner.__name__, self.wait_time)
         self.cache_client = CacheClient()
-
-    def load_config(self, config):
-        """
-        Loads configuration from dictionary
-        """
-        try:
-            self.logger.info(f"loading {CacheCleaner.__name__} with {config}")
-            self.wait_time = config["wait_time"]
-        except Exception as error:
-            self.logger.error(f"invalid configuration for {CacheCleaner.__name__} class")
-            self.logger.error(error)
-            raise error
 
     def do_work(self):
         """
