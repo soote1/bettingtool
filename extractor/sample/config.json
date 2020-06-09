@@ -59,15 +59,6 @@
                     "durable":true,
                     "delivery_mode":2,
                     "exchange":""
-                },
-                "cache_config":
-                {
-                    "leagues_key":"caliente_seeder_leagues",
-                    "matches_key":"caliente_seeder_matches",
-                    "state_key":"caliente_seeder_state",
-                    "state_value_key":"value",
-                    "initial_state":{"value":"new"},
-                    "decode_format":"utf-8"
                 }
             }
         ]

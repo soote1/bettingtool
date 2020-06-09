@@ -143,7 +143,7 @@ class Extractor:
         Starts all processes and stop them when keyboard interrupt signal is received.
         """
         keyboard_interrupt_event = Event()
-        worker_instances = self.consumers + self.seeders + self.tools
+        worker_instances =self.tools + self.consumers + self.seeders
         # create processes
         for worker_instance in worker_instances:
             process = Process(target=worker_instance.run, args=(keyboard_interrupt_event,))

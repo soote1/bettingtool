@@ -1,111 +1,106 @@
+import datetime
 from multiprocessing import get_logger
 
-from extractor.sample.common.cache import CacheClient
+from walrus import Model, DateTimeField, TextField
 
-class CalienteCacheKeys:
-    @staticmethod
-    def leagues_key():
-        return "leagues_key"
+from extractor.sample.common.cache import CacheClient, BaseModel
 
-    @staticmethod
-    def matches_key():
-        return "matches_key"
+class Worker(BaseModel):
+    name = TextField(primary_key=True)
+    state = TextField(index=True)
 
-    @staticmethod
-    def state_key():
-        return "state_key"
+class League(BaseModel):
+    url = TextField(primary_key=True)
 
-    @staticmethod
-    def state_value_key():
-        return "state_value_key"
-
-    @staticmethod
-    def initial_state():
-        return "initial_state"
-    
-    @staticmethod
-    def decode_format():
-        return "decode_format"
+class Game(BaseModel):
+    url = TextField(primary_key=True)
+    last_crawl = DateTimeField(index=True)
 
 class CalienteSeederCache(CacheClient):
-    def __init__(self, config):
+    def __init__(self):
         """
         Initialize wrapper.
         """
         super().__init__()
         self.logger = get_logger()
-        self.load_config(config)
-        self.load_keys()
 
-    def load_config(self, config):
-        try:
-            self.logger.info(f"initializing {CalienteSeederCache.__name__} with {config}")
-            self.leagues_key = config[CalienteCacheKeys.leagues_key()]
-            self.matches_key = config[CalienteCacheKeys.matches_key()]
-            self.state_key = config[CalienteCacheKeys.state_key()]
-            self.state_value_key = config[CalienteCacheKeys.state_value_key()]
-            self.initial_state = config[CalienteCacheKeys.initial_state()]
-            self.decode_format = config[CalienteCacheKeys.decode_format()]
-        except Exception as error:
-            self.logger.error(f"invalid configuration for {CalienteSeederCache.__name__} class")
-            self.logger.error(error)
-            raise error
+    def create_worker_state(self, name, state):
+        self.logger.info(f"Creating worker state with name={name} state={state}")
+        Worker.create(name=name, state=state)
 
-    def load_keys(self):
+    def get_worker_state(self, name):
         """
-        Creates the keys to represent caliente seeder state and pending work
+        Fetchs worker state from cache server
         """
+        # TODO: handle KeyError when worker state doesn't exist
         try:
-            self.leagues = self.client.Array(self.leagues_key)
-            self.matches = self.client.Array(self.matches_key)
-            self.state = self.client.Hash(self.state_key)
-        except Exception as error:
-            self.logger.error("problem while creating caliente seeder keys in cache server")
-            self.logger.error(error)
-            raise error
+            self.logger.info("fetching worker state from cache")
+            return Worker.load(name).state
+        except KeyError as error:
+            self.logger.info("worker state not initialized")
+            return None
 
-    def update_state(self, new_state):
+    def update_worker_state(self, name, new_state):
         """
         Updates seeder's state in the cache server.
         """
-        self.state[self.state_value_key] = new_state
-    
-    def get_state(self):
-        """
-        Retrieves seeder's state from the cache server.
-        """
-        state = self.state.get(self.state_value_key)
-        return state if state == None else state.decode(self.decode_format)
+        self.logger.info("updating worker state")
+        try:
+            worker_state = Worker.load(name)
+            worker_state.state = new_state
+            worker_state.save()
+        except KeyError as error:
+            self.logger.info("worker state not initialized... creating new instance")
+            self.create_worker_state(name, new_state)
     
     def save_leagues(self, leagues):
         """
-        Saves the urls for all the leagues in the cache server.
+        Saves a list of league URLs.
         """
-        self.leagues.clear()
-        self.leagues.extend(leagues)
+        for league in leagues:
+            self.save_league(league)
+
+    def save_league(self, league):
+        """
+        Saves new league url in the cache server.
+        """
+        self.logger.info(f"saving {league} in cache server")
+        League.create(url=league)
 
     def get_league(self):
         """
         Retrieves a random league url from the cache server.
         """
-        league = self.leagues.pop() 
-        return league if league == None else league.decode(self.decode_format)
+        self.logger.info("fetching league url from cache server")
+        league = next(League.all())
+        league.delete()
+        return league.url
 
-    def save_match_odds(self, match_odds_list):
+    def save_games(self, games_urls, crawled_at):
         """
         Saves the urls for all the matches on a given league in the cache server.
         """
-        self.matches.extend(match_odds_list)
+        for game_url in games_urls:
+            self.save_game(game_url, crawled_at)
+    
+    def save_game(self, match_url, last_crawl):
+        self.logger.info(f"saving new game with url={match_url} processing_count={last_crawl}")
+        Game.create(url=match_url, last_crawl=last_crawl)
 
-    def get_match(self):
+    def get_oldest_game_url(self):
         """
-        Retrieves a random match url from the cache server.
+        Returns the oldest game url.
         """
-        match = self.matches.pop()
-        return match if match == None else match.decode(self.decode_format)
+        self.logger.info("fetching oldest game url from cache server")
+        for game in Game.query(order_by=Game.last_crawl):
+            game.last_crawl = datetime.datetime.utcnow()
+            game.save()
+            return game.url
+
+        return None
 
     def get_pending_leagues(self):
         """
         Retrieves the current count of URLs which are available in the cache server.
         """
-        return len(self.leagues)
+        return League.count()

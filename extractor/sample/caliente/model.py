@@ -82,10 +82,6 @@ class CalienteSeederConfigKeys(object):
     def odds_link_target():
         return "odds_link_target"
 
-    @staticmethod
-    def cache_config():
-        return "cache_config"
-
 class CalienteFetcherConfigKeys:
     @staticmethod
     def parser():

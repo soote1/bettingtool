@@ -1,4 +1,5 @@
 import json
+import datetime
 from multiprocessing import get_logger
 
 import requests
@@ -98,15 +99,16 @@ class CalienteSeeder(Seeder):
         Initialize seeder instance.
         """
         super().__init__(config[CalienteSeederConfigKeys.wait_time()])
+        self.name = CalienteSeeder.__name__
         self.load_config(config)
         self.logger = get_logger()
-        self.cache = CalienteSeederCache(self.cache_config)
-        self.current_state = self.get_state()
+        self.cache = CalienteSeederCache()
+        self.cache.create_worker_state(self.name, CalienteSeederState.NEW())
         self.message_producer = CalienteUrlProducer(self.producer_config)
 
     def load_config(self, config):
         try:
-            self.logger.info(f"intializing {CalienteSeeder.__name__} with {config}")
+            self.logger.info(f"intializing {self.name} with {config}")
             self.base_href = config[CalienteSeederConfigKeys.base_href()]
             self.leagues_url = f"{self.base_href}{config[CalienteSeederConfigKeys.leagues_path()]}"
             self.leagues_container_type = config[CalienteSeederConfigKeys.leagues_container_type()]
@@ -120,9 +122,8 @@ class CalienteSeeder(Seeder):
             self.odds_link_target = config[CalienteSeederConfigKeys.odds_link_target()]
             self.html_parser = config[CalienteSeederConfigKeys.html_parser()]
             self.producer_config = config[CalienteSeederConfigKeys.producer_config()]
-            self.cache_config = config[CalienteSeederConfigKeys.cache_config()]
         except Exception as error:
-            self.logger.error(f"invalid configuration for {CalienteSeeder.__name__}")
+            self.logger.error(f"invalid configuration for {self.name}")
             self.logger.error(error)
             raise error
 
@@ -133,7 +134,7 @@ class CalienteSeeder(Seeder):
         depending on the current seeder's state.
         """
         self.current_state = self.get_state()
-        self.logger.info(f"{CalienteSeeder.__name__} - {self.current_state}")
+        self.logger.info(f"{self.name} - {self.current_state}")
         if self.current_state == CalienteSeederState.NEW():
             self.update_state(CalienteSeederState.FETCHING_LEAGUES())
             self.get_leagues()
@@ -149,18 +150,22 @@ class CalienteSeeder(Seeder):
 
     def get_state(self):
         """
-        Retrieves the seeder's state from the cache server. 
-        Returns None if state hasn't been set.
-        """
-        state = self.cache.get_state()
-        return CalienteSeederState.NEW() if state == None else state
+        Retrieves the seeder's state from the cache server.
+        """ 
+        state = self.cache.get_worker_state(self.name)
+        if state == None:
+            self.update_state(CalienteSeederState.NEW())
+        else:
+            return state
+        
+        return self.cache.get_worker_state(self.name)
 
     def update_state(self, new_state):
         """
         Tells the cache client to update the current seeder's state.
         """
-        self.current_state = new_state
-        self.cache.update_state(self.current_state)
+        self.cache.update_worker_state(self.name, new_state)
+        self.current_state = self.cache.get_worker_state(self.name)
 
     def set_seeder_ready(self):
         """
@@ -212,7 +217,7 @@ class CalienteSeeder(Seeder):
         """
         url = self.cache.get_league()
         if url == None:
-            self.logger.info("no soccer match url available, updating seeder state and waiting for next attempt")
+            self.logger.info("no game url available, updating seeder state and waiting for next attempt")
             self.set_seeder_ready()
             return
 
@@ -224,7 +229,7 @@ class CalienteSeeder(Seeder):
             return
 
         try:
-            self.logger.info(f"fetching odds for all matches in league {url}")
+            self.logger.info(f"fetching odds for all games in league {url}")
             soup = BeautifulSoup(league_matches_page, self.html_parser)
             matches_table = soup.find_all(self.matches_container_type, self.matches_container_target)
             match_odds_list = []
@@ -237,15 +242,15 @@ class CalienteSeeder(Seeder):
             self.logger.error(error)
             return
 
-        self.save_match_odds_urls(match_odds_list)
+        self.save_game_odds_urls(match_odds_list)
 
-    def save_match_odds_urls(self, match_odds_urls):
-        self.logger.info("saving odds' links in cache server")
-        self.cache.save_match_odds(match_odds_urls)
+    def save_game_odds_urls(self, game_odds_urls):
+        self.logger.info("saving game odds' links in cache server")
+        self.cache.save_games(game_odds_urls, datetime.datetime.utcnow())
 
-    def get_match_url(self):
-        self.logger.info("fetching odds link from cache")
-        return self.cache.get_match()
+    def get_game_url(self):
+        self.logger.info("fetching game odds link from cache")
+        return self.cache.get_oldest_game_url()
 
     def send_odds_link(self):
         """
@@ -253,7 +258,7 @@ class CalienteSeeder(Seeder):
         send the url to the corresponding queue so that it can be used
         by a fetcher instance.
         """
-        match_url = self.get_match_url()
+        match_url = self.get_game_url()
         return self.message_producer.send_url(match_url)
 
 class CalienteUrlConsumer(Consumer):
@@ -298,7 +303,7 @@ class CalienteUrlConsumer(Consumer):
             if odds_sent:
                 self.logger.info("message sent... removing from queue")
             else:
-                self.logger.info("the message couldn't be delivered to the queue... keeping in it for next attempt")
+                self.logger.info("the message couldn't be delivered to the queue... keeping it for next attempt")
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
     def get_odds_from_fetcher(self, url):

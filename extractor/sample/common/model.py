@@ -36,7 +36,6 @@ class TimedWorker(Worker):
         """
         self.logger = get_logger()
         self.wait_time = wait_time
-        self.current_state = "new"
 
     def run(self, shutdown_event):
         """
