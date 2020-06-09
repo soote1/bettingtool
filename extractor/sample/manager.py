@@ -5,36 +5,11 @@ import importlib
 import json
 from multiprocessing import Event, Process, get_logger, log_to_stderr
 
-class ConfigKeys(object):
-    @staticmethod
-    def consumers():
-        return "consumers"
-    
-    @staticmethod
-    def seeders():
-        return "seeders"
-
-    @staticmethod
-    def tools():
-        return "tools"
-    
-    @staticmethod
-    def wait_time():
-        return "wait_time"
-
-    @staticmethod
-    def worker_module():
-        return 0
-    
-    @staticmethod
-    def worker_class():
-        return 1
-    
-    @staticmethod 
-    def worker_config():
-        return 2
-
 class WorkerFactory(object):
+    WORKER_MODULE = 0
+    WORKER_CLASS = 1
+    WORKER_CONFIG = 2
+
     @staticmethod
     def create_instance(module_str, class_name_str, config):
         """
@@ -51,9 +26,9 @@ class WorkerFactory(object):
         """
         objects = []
         for instance_config in instance_config_list:
-            module_name = instance_config[ConfigKeys.worker_module()]
-            class_name = instance_config[ConfigKeys.worker_class()]
-            config = instance_config[ConfigKeys.worker_config()]
+            module_name = instance_config[WorkerFactory.WORKER_MODULE]
+            class_name = instance_config[WorkerFactory.WORKER_CLASS]
+            config = instance_config[WorkerFactory.WORKER_CONFIG]
             objects.append(WorkerFactory.create_instance(module_name, class_name, config))
 
         return objects
@@ -87,6 +62,11 @@ class ConfigHelper:
         return config_str
 
 class Extractor:
+    CONSUMERS = "consumers"
+    SEEDERS = "seeders"
+    TOOLS = "tools"
+    WAIT_TIME = "wait_time"
+
     def __init__(self, config_file_path):
         """
         Initialize extractor instance.
@@ -121,21 +101,21 @@ class Extractor:
         """
         Creates seeder instances.
         """
-        seeders_configurations = self.config_helper.get(ConfigKeys.seeders())
+        seeders_configurations = self.config_helper.get(Extractor.SEEDERS)
         self.seeders = WorkerFactory.create_instances(seeders_configurations)
 
     def load_consumers(self):
         """
         Creates consumer instances.
         """
-        consumers_configurations = self.config_helper.get(ConfigKeys.consumers())
+        consumers_configurations = self.config_helper.get(Extractor.CONSUMERS)
         self.consumers = WorkerFactory.create_instances(consumers_configurations)
     
     def load_tools(self):
         """
         Creates tools instances.
         """
-        tools_configurations = self.config_helper.get(ConfigKeys.tools())
+        tools_configurations = self.config_helper.get(Extractor.TOOLS)
         self.tools = WorkerFactory.create_instances(tools_configurations)
 
     def run(self):
@@ -155,7 +135,7 @@ class Extractor:
 
         while True:
             try:
-                time.sleep(self.config_helper.get(ConfigKeys.wait_time()))
+                time.sleep(self.config_helper.get(Extractor.WAIT_TIME))
             except KeyboardInterrupt as error:
                 self.logger.info("sending shutdown signal to child processes")
                 keyboard_interrupt_event.set()

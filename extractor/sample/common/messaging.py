@@ -4,34 +4,13 @@ import pika
 
 from extractor.sample.common.model import Worker
 
-class MessagingConfigKeys:
-    @staticmethod
-    def host_name():
-        return "host_name"
-
-    @staticmethod
-    def queue_name():
-        return "queue_name"
-
-    @staticmethod
-    def prefetch_count():
-        return "prefetch_count"
-
-    @staticmethod
-    def durable():
-        return "durable"
-
-    @staticmethod
-    def wait_time():
-        return "wait_time"
-
-    @staticmethod
-    def exchange():
-        return "exchange"
-    
-    @staticmethod
-    def delivery_mode():
-        return "delivery_mode"
+HOST_NAME = "host_name"
+QUEUE_NAME = "queue_name"
+PREFETCH_COUNT = "prefetch_count"
+DURABLE = "durable"
+WAIT_TIME = "wait_time"
+EXCHANGE = "exchange"
+DELIVERY_MODE = "delivery_mode"
 
 class Producer:
     def __init__(self, config):
@@ -46,11 +25,11 @@ class Producer:
     def load_config(self, config):
         try:
             self.logger.info(f"loading {Producer.__name__} with {config}")
-            self.queue_name = config[MessagingConfigKeys.queue_name()]
-            self.durable = config[MessagingConfigKeys.durable()]
-            self.host_name = config[MessagingConfigKeys.host_name()]
-            self.delivery_mode = config[MessagingConfigKeys.delivery_mode()]
-            self.exchange = config[MessagingConfigKeys.exchange()]
+            self.queue_name = config[QUEUE_NAME]
+            self.durable = config[DURABLE]
+            self.host_name = config[HOST_NAME]
+            self.delivery_mode = config[DELIVERY_MODE]
+            self.exchange = config[EXCHANGE]
         except Exception as error:
             self.logger.error(f"invalid configuration for {Producer.__name__}")
             self.logger.error(error)
@@ -105,11 +84,11 @@ class Consumer(Worker):
     def load_consumer_config(self, config):
         try:
             self.logger.info(f"initializing consumer with {config}")
-            self.host_name = config[MessagingConfigKeys.host_name()]
-            self.durable = config[MessagingConfigKeys.durable()]
-            self.queue_name = config[MessagingConfigKeys.queue_name()]
-            self.prefetch_count = config[MessagingConfigKeys.prefetch_count()]
-            self.wait_time = config[MessagingConfigKeys.wait_time()]
+            self.host_name = config[HOST_NAME]
+            self.durable = config[DURABLE]
+            self.queue_name = config[QUEUE_NAME]
+            self.prefetch_count = config[PREFETCH_COUNT]
+            self.wait_time = config[WAIT_TIME]
         except Exception as error:
             self.logger.error(f"invalid configuration for {Consumer.__name__} class")
             self.logger.error(error)

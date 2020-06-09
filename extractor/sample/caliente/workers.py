@@ -8,10 +8,19 @@ from bs4 import BeautifulSoup
 from extractor.sample.common.model import Fetcher, Seeder, TimedWorker, Game
 from extractor.sample.common.cache import CacheClient
 from extractor.sample.common.messaging import Producer, Consumer
-from extractor.sample.caliente.model import CalienteSeederConfigKeys, CalienteFetcherConfigKeys, CalienteUrlConsumerConfigKeys, CalienteSeederState
 from extractor.sample.caliente.cache import CalienteSeederCache
 
 class CalienteFetcher(Fetcher):
+    PARSER = "parser"
+    CORRECT_SCORE_GAME_CONTAINER_TYPE = "correct_score_game_container_type"
+    CORRECT_SCORE_GAME_CONTAINER_TARGET = "correct_score_game_container_target"
+    ODDS_CONTAINER_TYPE = "odds_container_type"
+    ODDS_CONTAINER_TARGET = "odds_container_target"
+    ODD_LABEL_TARGET = "odd_label_target"
+    ODD_VALUE_CONTAINER_TYPE = "odd_value_container_type"
+    ODD_VALUE_CONTAINER_TARGET = "odd_value_container_target"
+    GAME_TYPE = "game_type"
+
     def __init__(self, config):
         """
         Initialize fetcher's instance.
@@ -23,15 +32,15 @@ class CalienteFetcher(Fetcher):
     def load_config(self, config):
         try:
             self.logger.info(f"intializing {CalienteFetcher.__name__} with {config}")
-            self.parser = config[CalienteFetcherConfigKeys.parser()]
-            self.correct_score_game_container_type = config[CalienteFetcherConfigKeys.correct_score_game_container_type()]
-            self.correct_score_game_container_target = config[CalienteFetcherConfigKeys.correct_score_game_container_target()]
-            self.odds_container_type = config[CalienteFetcherConfigKeys.odds_container_type()]
-            self.odds_container_target = config[CalienteFetcherConfigKeys.odds_container_target()]
-            self.odd_label_target = config[CalienteFetcherConfigKeys.odd_label_target()]
-            self.odd_value_container_type = config[CalienteFetcherConfigKeys.odd_value_container_type()]
-            self.odd_value_container_taget = config[CalienteFetcherConfigKeys.odd_value_container_target()]
-            self.game_type = config[CalienteFetcherConfigKeys.game_type()]
+            self.parser = config[self.PARSER]
+            self.correct_score_game_container_type = config[self.CORRECT_SCORE_GAME_CONTAINER_TYPE]
+            self.correct_score_game_container_target = config[self.CORRECT_SCORE_GAME_CONTAINER_TARGET]
+            self.odds_container_type = config[self.ODDS_CONTAINER_TYPE]
+            self.odds_container_target = config[self.ODDS_CONTAINER_TARGET]
+            self.odd_label_target = config[self.ODD_LABEL_TARGET]
+            self.odd_value_container_type = config[self.ODD_VALUE_CONTAINER_TYPE]
+            self.odd_value_container_taget = config[self.ODD_VALUE_CONTAINER_TARGET]
+            self.game_type = config[self.GAME_TYPE]
         except Exception as error:
             self.logger.error(f"invalid configuration for {CalienteFetcher.__name__} class")
             self.logger.error(error)
@@ -94,34 +103,53 @@ class CalienteOddsProducer(Producer):
         return self.produce(serialized_product)
 
 class CalienteSeeder(Seeder):
+    NEW = "new"
+    FETCHING_LEAGUES = "fetching_leagues"
+    FETCHING_GAMES = "fetching_games"
+    READY = "ready"
+    WAIT_TIME = "wait_time"
+    BASE_HREF = "base_href"
+    PRODUCER_CONFIG = "producer_config"
+    LEAGUES_PATH = "leagues_path"
+    HTML_PARSER = "html_parser"
+    LEAGUES_CONTAINER_TYPE = "leagues_container_type"
+    LEAGUES_CONTAINER_TARGET = "leagues_container_target"
+    LEAGUE_URL_TYPE = "league_url_type"
+    LEAGUE_URL_TARGET = "league_url_target"
+    GAMES_CONTAINER_TYPE = "games_container_type"
+    GAMES_CONTAINER_TARGET = "games_container_target"
+    ODDS_CONTAINER_TARGET = "odds_container_target"
+    ODDS_CONTAINER_TYPE = "odds_container_type"
+    ODDS_LINK_TARGET = "odds_link_target"
+
     def __init__(self, config):
         """
         Initialize seeder instance.
         """
-        super().__init__(config[CalienteSeederConfigKeys.wait_time()])
+        super().__init__(config[self.WAIT_TIME])
         self.name = CalienteSeeder.__name__
         self.load_config(config)
         self.logger = get_logger()
         self.cache = CalienteSeederCache()
-        self.cache.create_worker_state(self.name, CalienteSeederState.NEW())
+        self.cache.create_worker_state(self.name, self.NEW)
         self.message_producer = CalienteUrlProducer(self.producer_config)
 
     def load_config(self, config):
         try:
             self.logger.info(f"intializing {self.name} with {config}")
-            self.base_href = config[CalienteSeederConfigKeys.base_href()]
-            self.leagues_url = f"{self.base_href}{config[CalienteSeederConfigKeys.leagues_path()]}"
-            self.leagues_container_type = config[CalienteSeederConfigKeys.leagues_container_type()]
-            self.leagues_container_target = config[CalienteSeederConfigKeys.leagues_container_target()]
-            self.league_url_type = config[CalienteSeederConfigKeys.league_url_type()]
-            self.league_url_target = config[CalienteSeederConfigKeys.league_url_target()]
-            self.matches_container_type = config[CalienteSeederConfigKeys.matches_container_type()]
-            self.matches_container_target = config[CalienteSeederConfigKeys.matches_container_target()]
-            self.odds_container_type = config[CalienteSeederConfigKeys.odds_container_type()]
-            self.odds_container_target = config[CalienteSeederConfigKeys.odds_container_target()]
-            self.odds_link_target = config[CalienteSeederConfigKeys.odds_link_target()]
-            self.html_parser = config[CalienteSeederConfigKeys.html_parser()]
-            self.producer_config = config[CalienteSeederConfigKeys.producer_config()]
+            self.base_href = config[self.BASE_HREF]
+            self.leagues_url = f"{self.base_href}{config[self.LEAGUES_PATH]}"
+            self.leagues_container_type = config[self.LEAGUES_CONTAINER_TYPE]
+            self.leagues_container_target = config[self.LEAGUES_CONTAINER_TARGET]
+            self.league_url_type = config[self.LEAGUE_URL_TYPE]
+            self.league_url_target = config[self.LEAGUE_URL_TARGET]
+            self.games_container_type = config[self.GAMES_CONTAINER_TYPE]
+            self.games_container_target = config[self.GAMES_CONTAINER_TARGET]
+            self.odds_container_type = config[self.ODDS_CONTAINER_TYPE]
+            self.odds_container_target = config[self.ODDS_CONTAINER_TARGET]
+            self.odds_link_target = config[self.ODDS_LINK_TARGET]
+            self.html_parser = config[self.HTML_PARSER]
+            self.producer_config = config[self.PRODUCER_CONFIG]
         except Exception as error:
             self.logger.error(f"invalid configuration for {self.name}")
             self.logger.error(error)
@@ -135,17 +163,17 @@ class CalienteSeeder(Seeder):
         """
         self.current_state = self.get_state()
         self.logger.info(f"{self.name} - {self.current_state}")
-        if self.current_state == CalienteSeederState.NEW():
-            self.update_state(CalienteSeederState.FETCHING_LEAGUES())
+        if self.current_state == self.NEW:
+            self.update_state(self.FETCHING_LEAGUES)
             self.get_leagues()
-        elif self.current_state == CalienteSeederState.FETCHING_LEAGUES():
+        elif self.current_state == self.FETCHING_LEAGUES:
             self.get_leagues()
-        elif self.current_state == CalienteSeederState.FETCHING_MATCHES():
+        elif self.current_state == self.FETCHING_GAMES:
             if self.cache.get_pending_leagues() == 0:
                 self.set_seeder_ready()
             else:
                 self.get_matches()
-        elif self.current_state== CalienteSeederState.READY():
+        elif self.current_state== self.READY:
             self.send_odds_link()
 
     def get_state(self):
@@ -154,7 +182,7 @@ class CalienteSeeder(Seeder):
         """ 
         state = self.cache.get_worker_state(self.name)
         if state == None:
-            self.update_state(CalienteSeederState.NEW())
+            self.update_state(self.NEW)
         else:
             return state
         
@@ -172,7 +200,7 @@ class CalienteSeeder(Seeder):
         Tells the cache client to set the current seeder's state as 'ready'.
         """
         self.logger.info("seeder is ready, updating state...")
-        self.update_state(CalienteSeederState.READY())
+        self.update_state(self.READY)
 
     def get_leagues(self):
         """
@@ -206,12 +234,12 @@ class CalienteSeeder(Seeder):
 
         self.logger.info(f"saving leagues' URLs")
         self.cache.save_leagues(league_urls)
-        self.update_state(CalienteSeederState.FETCHING_MATCHES())
+        self.update_state(self.FETCHING_GAMES)
 
     def get_matches(self):
         """
-        Retrieves the content of the page containing all the urls for all the soccer mathces
-        for a given league, then creates a beautifulsoup object to parse the result and extract 
+        Retrieves the content of the page containing all the urls for all games
+        in a given league, then creates a beautifulsoup object to parse the result and extract 
         from the dom the odds urls for each match. Finally, tells the cache client to store the 
         urls in the cache server and updates the current seeder's state.
         """
@@ -222,7 +250,7 @@ class CalienteSeeder(Seeder):
             return
 
         try:
-            league_matches_page = requests.get(url).text
+            league_games_page = requests.get(url).text
         except Exception as error:
             self.logger.error("problems found while making the http request... waiting for next attempt")
             self.logger.error(error)
@@ -230,19 +258,19 @@ class CalienteSeeder(Seeder):
 
         try:
             self.logger.info(f"fetching odds for all games in league {url}")
-            soup = BeautifulSoup(league_matches_page, self.html_parser)
-            matches_table = soup.find_all(self.matches_container_type, self.matches_container_target)
-            match_odds_list = []
-            for match in matches_table:
+            soup = BeautifulSoup(league_games_page, self.html_parser)
+            games_table = soup.find_all(self.games_container_type, self.games_container_target)
+            game_odds_list = []
+            for match in games_table:
                 full_bets_link = match.find(self.odds_container_type, self.odds_container_target)[self.odds_link_target]
-                match_odds_list.append(f"{self.base_href}{full_bets_link}")
+                game_odds_list.append(f"{self.base_href}{full_bets_link}")
                 self.logger.info(f"bets page link: {full_bets_link}")
         except Exception as error:
             self.logger.error(f"problems found while trying to extract the data from the dom object... waiting for next attempt")
             self.logger.error(error)
             return
 
-        self.save_game_odds_urls(match_odds_list)
+        self.save_game_odds_urls(game_odds_list)
 
     def save_game_odds_urls(self, game_odds_urls):
         self.logger.info("saving game odds' links in cache server")
@@ -262,6 +290,10 @@ class CalienteSeeder(Seeder):
         return self.message_producer.send_url(match_url)
 
 class CalienteUrlConsumer(Consumer):
+    PRODUCER_CONFIG = "producer_config"
+    FETCHER_CONFIG = "fetcher_config"
+    DECODE_FORMAT = "decode_format"
+
     def __init__(self, config):
         """
         Initialize consumer instance.
@@ -278,9 +310,9 @@ class CalienteUrlConsumer(Consumer):
         """
         try:
             self.logger.info(f"initializing {CalienteUrlConsumer.__name__} with {config}")
-            self.producer_config = config[CalienteUrlConsumerConfigKeys.producer_config()]
-            self.fetcher_config = config[CalienteUrlConsumerConfigKeys.fetcher_config()]
-            self.decode_format = config[CalienteUrlConsumerConfigKeys.decode_format()]
+            self.producer_config = config[self.PRODUCER_CONFIG]
+            self.fetcher_config = config[self.FETCHER_CONFIG]
+            self.decode_format = config[self.DECODE_FORMAT]
         except Exception as error:
             self.logger.error(f"invalid configuration for {CalienteUrlConsumer.__name__}")
             self.logger.error(error)
