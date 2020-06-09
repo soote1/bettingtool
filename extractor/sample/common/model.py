@@ -30,7 +30,7 @@ class Worker:
         raise NotImplementedError
 
 class TimedWorker(Worker):
-    def __init__(self, wait_time):
+    def __init__(self, wait_time, wait_first=False):
         """
         Initialize timed worker class.
         """
@@ -43,12 +43,14 @@ class TimedWorker(Worker):
         wait n seconds to receive a shutdown event before
         calling do_work again.
         """
+        do_work = True
         while not shutdown_event.is_set():
             try:
-                self.do_work()
+                if do_work:
+                    self.do_work()
                 shutdown_event.wait(self.wait_time)
             except KeyboardInterrupt as error:
-                continue
+                do_work = False
     
     def do_work(self):
         raise NotImplementedError
