@@ -17,7 +17,7 @@ class Worker:
         """
         raise NotImplementedError
 
-    def run(self, shutdown_event):
+    def run(self):
         """
         Logic to be executed on each iteration.
         """
@@ -30,7 +30,7 @@ class Worker:
         raise NotImplementedError
 
 class TimedWorker(Worker):
-    def __init__(self, wait_time, wait_first=False):
+    def __init__(self, wait_time):
         """
         Initialize timed worker class.
         """

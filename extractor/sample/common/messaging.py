@@ -110,7 +110,7 @@ class Consumer(Worker):
             self.logger.error(error)
             raise error
 
-    def run(self, shutdown_event):
+    def run(self):
         """
         Main method which starts the message consuming process.
         """
@@ -118,6 +118,7 @@ class Consumer(Worker):
             self.logger.info("starting consuming")
             self.channel.start_consuming()
         except KeyboardInterrupt as error:
+            self.logger.info("closing consumer")
             self.channel.close()
 
     def do_work(self, ch, method, properties, body):

@@ -4,6 +4,7 @@ import time
 import importlib
 import json
 from multiprocessing import Event, Process, get_logger, log_to_stderr
+from extractor.sample.common.model import TimedWorker, Worker
 
 class WorkerFactory(object):
     WORKER_MODULE = 0
@@ -126,7 +127,10 @@ class Extractor:
         worker_instances =self.tools + self.consumers + self.seeders
         # create processes
         for worker_instance in worker_instances:
-            process = Process(target=worker_instance.run, args=(keyboard_interrupt_event,))
+            if isinstance(worker_instance, Worker):
+                process = Process(target=worker_instance.run)
+            if isinstance(worker_instance, TimedWorker):
+                process = Process(target=worker_instance.run, args=(keyboard_interrupt_event,))
             self.processes.append(process)
 
         # start all processes
