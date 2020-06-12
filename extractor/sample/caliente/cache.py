@@ -17,15 +17,16 @@ class Game(BaseModel):
     last_crawl = DateTimeField(index=True)
 
 class CalienteSeederCache(CacheClient):
-    def __init__(self):
+    def __init__(self, config):
         """
         Initialize wrapper.
         """
-        super().__init__()
+        super().__init__(config)
         self.logger = get_logger()
 
     def create_worker_state(self, name, state):
         self.logger.info(f"Creating worker state with name={name} state={state}")
+        Worker.__database__ = self.client
         Worker.create(name=name, state=state)
 
     def get_worker_state(self, name):
@@ -65,6 +66,7 @@ class CalienteSeederCache(CacheClient):
         Saves new league url in the cache server.
         """
         self.logger.info(f"saving {league} in cache server")
+        League.__database__ = self.client
         League.create(url=league)
 
     def get_league(self):
@@ -85,6 +87,7 @@ class CalienteSeederCache(CacheClient):
     
     def save_game(self, match_url, last_crawl):
         self.logger.info(f"saving new game with url={match_url} processing_count={last_crawl}")
+        Game.__database__ = self.client
         Game.create(url=match_url, last_crawl=last_crawl)
 
     def get_oldest_game_url(self):

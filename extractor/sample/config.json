@@ -1,44 +1,54 @@
 {
     "wait_time":1,
     "consumers":[
-        [
-            "extractor.sample.caliente.workers",
-            "CalienteUrlConsumer",
-            {
+        {
+            "module":"extractor.sample.caliente.workers",
+            "class":"CalienteUrlConsumer",
+            "config":{
                 "host_name":"localhost",
                 "queue_name":"caliente_url_queue",
                 "durable":true,
                 "prefetch_count":1,
                 "wait_time":5,
-                "decode_format":"utf-8",
-                "producer_config":
+                "decode_format":"utf-8"
+            },
+            "dependencies":[
                 {
-                    "host_name":"localhost",
-                    "queue_name":"caliente_odds_queue",
-                    "durable":true,
-                    "delivery_mode":2,
-                    "exchange":""
+                    "module":"extractor.sample.caliente.workers",
+                    "class":"CalienteFetcher",
+                    "config":{
+                        "parser":"lxml",
+                        "correct_score_game_container_type":"table",
+                        "correct_score_game_container_target":{"class":"correct-score"},
+                        "odds_container_type":"button",
+                        "odds_container_target":{"class":"price"},
+                        "odd_label_target":"title",
+                        "odd_value_container_type":"span",
+                        "odd_value_container_target":{"class":"price us"},
+                        "game_type":"correct_score"
+                    },
+                    "dependencies":[]
                 },
-                "fetcher_config":
                 {
-                    "parser":"lxml",
-                    "correct_score_game_container_type":"table",
-                    "correct_score_game_container_target":{"class":"correct-score"},
-                    "odds_container_type":"button",
-                    "odds_container_target":{"class":"price"},
-                    "odd_label_target":"title",
-                    "odd_value_container_type":"span",
-                    "odd_value_container_target":{"class":"price us"},
-                    "game_type":"correct_score"
+                    "module":"extractor.sample.caliente.workers",
+                    "class":"CalienteOddsProducer",
+                    "config":{
+                        "host_name":"localhost",
+                        "queue_name":"caliente_odds_queue",
+                        "durable":true,
+                        "delivery_mode":2,
+                        "exchange":""
+                    },
+                    "dependencies":[]
                 }
-            }
-        ]
+            ]
+        }
     ],
     "seeders":[
-        [
-            "extractor.sample.caliente.workers", 
-            "CalienteSeeder",
-            {
+        {
+            "module":"extractor.sample.caliente.workers", 
+            "class":"CalienteSeeder",
+            "config":{
                 "base_href": "https://sports.caliente.mx", 
                 "wait_time":1, 
                 "leagues_path":"/es_MX/Futbol",
@@ -51,25 +61,53 @@
                 "odds_container_type":"a",
                 "odds_container_target":{"title":"Clic aquí para más apuestas"},
                 "odds_link_target":"href",
-                "html_parser":"lxml",
-                "producer_config":
+                "html_parser":"lxml"
+            },
+            "dependencies":[
                 {
-                    "host_name":"localhost",
-                    "queue_name":"caliente_url_queue",
-                    "durable":true,
-                    "delivery_mode":2,
-                    "exchange":""
+                    "module":"extractor.sample.caliente.cache",
+                    "class":"CalienteSeederCache",
+                    "config":{
+                        "host":"localhost",
+                        "port": 6379,
+                        "db":0
+                    },
+                    "dependencies":[]
+                },
+                {
+                    "module":"extractor.sample.caliente.workers",
+                    "class":"CalienteUrlProducer",
+                    "config":{
+                        "host_name":"localhost",
+                        "queue_name":"caliente_url_queue",
+                        "durable":true,
+                        "delivery_mode":2,
+                        "exchange":""
+                    },
+                    "dependencies":[]
                 }
-            }
-        ]
+            ]
+        }
     ],
     "tools":[
-        [
-            "extractor.sample.caliente.workers",
-            "CalienteCacheCleaner",
-            {
+        {
+            "module":"extractor.sample.caliente.workers",
+            "class":"CalienteCacheCleaner",
+            "config":{
                 "wait_time":86400
-            }
-        ]
+            },
+            "dependencies":[
+                {
+                    "module":"extractor.sample.common.cache",
+                    "class":"CacheClient",
+                    "config":{
+                        "host":"localhost",
+                        "port": 6379,
+                        "db":0
+                    },
+                    "dependencies":[]
+                }
+            ]
+        }
     ]
 }

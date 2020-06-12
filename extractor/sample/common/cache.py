@@ -4,20 +4,21 @@ from multiprocessing import get_logger
 
 from walrus import Walrus, Model
 
-full_path = f"{os.path.dirname(__file__)}/cache_config.json"
-with open(full_path) as json_config:
-    config = json.load(json_config)
-database = Walrus(host=config["host"], port=config["port"], db=config["db"])
-
 class BaseModel(Model):
-    __database__ = database
+    pass
 
 class CacheClient:
-    def __init__(self):
+    HOST = "host"
+    PORT = "port"
+    DB = "db"
+    def __init__(self, config):
         """
         Initialize cache client instance
         """
-        self.client = database
+        self.client = Walrus(
+            host=config[CacheClient.HOST], 
+            port=config[CacheClient.PORT], 
+            db=config[CacheClient.DB])
 
     def clean_cache(self):
         """

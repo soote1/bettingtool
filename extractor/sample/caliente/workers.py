@@ -6,9 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from extractor.sample.common.model import Fetcher, Seeder, TimedWorker, Game
-from extractor.sample.common.cache import CacheClient
 from extractor.sample.common.messaging import Producer, Consumer
-from extractor.sample.caliente.cache import CalienteSeederCache
 
 class CalienteFetcher(Fetcher):
     PARSER = "parser"
@@ -21,7 +19,7 @@ class CalienteFetcher(Fetcher):
     ODD_VALUE_CONTAINER_TARGET = "odd_value_container_target"
     GAME_TYPE = "game_type"
 
-    def __init__(self, config):
+    def __init__(self, config, *args):
         """
         Initialize fetcher's instance.
         """
@@ -84,7 +82,7 @@ class CalienteFetcher(Fetcher):
             return None
 
 class CalienteOddsProducer(Producer):
-    def __init__(self, config):
+    def __init__(self, config, *args):
         """
         Initialize odds producer.
         """
@@ -121,8 +119,10 @@ class CalienteSeeder(Seeder):
     ODDS_CONTAINER_TARGET = "odds_container_target"
     ODDS_CONTAINER_TYPE = "odds_container_type"
     ODDS_LINK_TARGET = "odds_link_target"
+    CACHE_CLIENT_PARAM = 0
+    URL_PRODUCER_PARAM = 1
 
-    def __init__(self, config):
+    def __init__(self, config, *args):
         """
         Initialize seeder instance.
         """
@@ -130,9 +130,9 @@ class CalienteSeeder(Seeder):
         self.name = CalienteSeeder.__name__
         self.load_config(config)
         self.logger = get_logger()
-        self.cache = CalienteSeederCache()
+        self.cache = args[CalienteSeeder.CACHE_CLIENT_PARAM]
+        self.message_producer = args[CalienteSeeder.URL_PRODUCER_PARAM]
         self.cache.create_worker_state(self.name, self.NEW)
-        self.message_producer = CalienteUrlProducer(self.producer_config)
 
     def load_config(self, config):
         try:
@@ -149,7 +149,6 @@ class CalienteSeeder(Seeder):
             self.odds_container_target = config[self.ODDS_CONTAINER_TARGET]
             self.odds_link_target = config[self.ODDS_LINK_TARGET]
             self.html_parser = config[self.HTML_PARSER]
-            self.producer_config = config[self.PRODUCER_CONFIG]
         except Exception as error:
             self.logger.error(f"invalid configuration for {self.name}")
             self.logger.error(error)
@@ -293,16 +292,18 @@ class CalienteUrlConsumer(Consumer):
     PRODUCER_CONFIG = "producer_config"
     FETCHER_CONFIG = "fetcher_config"
     DECODE_FORMAT = "decode_format"
+    ODDS_FETCHER_PARAM = 0
+    ODDS_PRODUCER_PARAM = 1
 
-    def __init__(self, config):
+    def __init__(self, config, *args):
         """
         Initialize consumer instance.
         """
-        self.logger = get_logger()
         super().__init__(CalienteUrlConsumer.__name__, config)
+        self.logger = get_logger()
         self.load_config(config)
-        self.odds_fetcher = CalienteFetcher(self.fetcher_config)
-        self.odds_producer = CalienteOddsProducer(self.producer_config)
+        self.odds_fetcher = args[CalienteUrlConsumer.ODDS_FETCHER_PARAM]
+        self.odds_producer = args[CalienteUrlConsumer.ODDS_PRODUCER_PARAM]
 
     def load_config(self, config):
         """
@@ -310,8 +311,6 @@ class CalienteUrlConsumer(Consumer):
         """
         try:
             self.logger.info(f"initializing {CalienteUrlConsumer.__name__} with {config}")
-            self.producer_config = config[self.PRODUCER_CONFIG]
-            self.fetcher_config = config[self.FETCHER_CONFIG]
             self.decode_format = config[self.DECODE_FORMAT]
         except Exception as error:
             self.logger.error(f"invalid configuration for {CalienteUrlConsumer.__name__}")
@@ -354,7 +353,7 @@ class CalienteUrlConsumer(Consumer):
         return self.odds_producer.send_odds(odds)
 
 class CalienteUrlProducer(Producer):
-    def __init__(self, config):
+    def __init__(self, config, *args):
         """
         Initialize producer instance.
         """
@@ -370,13 +369,15 @@ class CalienteUrlProducer(Producer):
         return self.produce(url)
 
 class CalienteCacheCleaner(TimedWorker):
-    def __init__(self, config):
+    WAIT_TIME = "wait_time"
+    CACHE_CLIENT_PARAM = 0
+    def __init__(self, config, *args):
         """
         Initialize cache cleaner instance
         """
-        super().__init__(config["wait_time"])
+        super().__init__(config[self.WAIT_TIME])
         self.logger = get_logger()
-        self.cache_client = CacheClient()
+        self.cache_client = args[CalienteCacheCleaner.CACHE_CLIENT_PARAM]
 
     def do_work(self):
         """

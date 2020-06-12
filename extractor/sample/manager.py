@@ -7,18 +7,19 @@ from multiprocessing import Event, Process, get_logger, log_to_stderr
 from extractor.sample.common.model import TimedWorker, Worker
 
 class WorkerFactory(object):
-    WORKER_MODULE = 0
-    WORKER_CLASS = 1
-    WORKER_CONFIG = 2
+    MODULE_ITEM = "module"
+    CLASS_ITEM = "class"
+    CONFIG_ITEM = "config"
+    DEPENDENCIES_ITEM = "dependencies"
 
     @staticmethod
-    def create_instance(module_str, class_name_str, config):
+    def create_instance(module_str, class_name_str, config, args):
         """
         Creates a new instance of a given class from a given module and passes a config dict.
         """
         class_module = importlib.import_module(module_str)
-        class_object = getattr(class_module, class_name_str)        
-        return class_object(config)
+        class_object = getattr(class_module, class_name_str)
+        return class_object(config, *args)
 
     @staticmethod
     def create_instances(instance_config_list):
@@ -27,10 +28,14 @@ class WorkerFactory(object):
         """
         objects = []
         for instance_config in instance_config_list:
-            module_name = instance_config[WorkerFactory.WORKER_MODULE]
-            class_name = instance_config[WorkerFactory.WORKER_CLASS]
-            config = instance_config[WorkerFactory.WORKER_CONFIG]
-            objects.append(WorkerFactory.create_instance(module_name, class_name, config))
+            module_name = instance_config[WorkerFactory.MODULE_ITEM]
+            class_name = instance_config[WorkerFactory.CLASS_ITEM]
+            config = instance_config[WorkerFactory.CONFIG_ITEM]
+            dependency_config_list = instance_config[WorkerFactory.DEPENDENCIES_ITEM]
+            dependencies = []
+            if len(dependency_config_list) > 0:
+                dependencies.extend(WorkerFactory.create_instances(dependency_config_list))
+            objects.append(WorkerFactory.create_instance(module_name, class_name, config, dependencies))
 
         return objects
 
