@@ -61,7 +61,9 @@
                 "odds_container_type":"a",
                 "odds_container_target":{"title":"Clic aquí para más apuestas"},
                 "odds_link_target":"href",
-                "html_parser":"lxml"
+                "html_parser":"lxml",
+                "target_leagues":["Alemania-Bundesliga"],
+                "url_delimiter":"/"
             },
             "dependencies":[
                 {

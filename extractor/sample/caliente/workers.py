@@ -119,6 +119,8 @@ class CalienteSeeder(Seeder):
     ODDS_CONTAINER_TARGET = "odds_container_target"
     ODDS_CONTAINER_TYPE = "odds_container_type"
     ODDS_LINK_TARGET = "odds_link_target"
+    TARGET_LEAGUES = "target_leagues"
+    URL_DELIMITER = "url_delimiter"
     CACHE_CLIENT_PARAM = 0
     URL_PRODUCER_PARAM = 1
 
@@ -149,6 +151,8 @@ class CalienteSeeder(Seeder):
             self.odds_container_target = config[self.ODDS_CONTAINER_TARGET]
             self.odds_link_target = config[self.ODDS_LINK_TARGET]
             self.html_parser = config[self.HTML_PARSER]
+            self.target_leagues = {*config[self.TARGET_LEAGUES]}
+            self.url_delimiter = config[self.URL_DELIMITER]
         except Exception as error:
             self.logger.error(f"invalid configuration for {self.name}")
             self.logger.error(error)
@@ -171,7 +175,7 @@ class CalienteSeeder(Seeder):
             if self.cache.get_pending_leagues() == 0:
                 self.set_seeder_ready()
             else:
-                self.get_matches()
+                self.get_games()
         elif self.current_state== self.READY:
             self.send_odds_link()
 
@@ -232,10 +236,22 @@ class CalienteSeeder(Seeder):
             return
 
         self.logger.info(f"saving leagues' URLs")
-        self.cache.save_leagues(league_urls)
+        self.cache.save_leagues(self.filter_leagues(league_urls))
         self.update_state(self.FETCHING_GAMES)
 
-    def get_matches(self):
+    def filter_leagues(self, leagues):
+        """
+        Removes all leagues which aren't in target_list property
+        """
+        self.logger.info("filtering target leagues")
+        filtered_leagues = []
+        for league in leagues:
+            league_name = league.split(self.url_delimiter)[-1]
+            if league_name in self.target_leagues:
+                filtered_leagues.append(league)
+        return filtered_leagues
+
+    def get_games(self):
         """
         Retrieves the content of the page containing all the urls for all games
         in a given league, then creates a beautifulsoup object to parse the result and extract 
