@@ -1,71 +1,10 @@
 import os
 import logging
 import time
-import importlib
-import json
+
 from multiprocessing import Event, Process, get_logger, log_to_stderr
 from extractor.sample.common.model import TimedWorker, Worker
-
-class WorkerFactory(object):
-    MODULE_ITEM = "module"
-    CLASS_ITEM = "class"
-    CONFIG_ITEM = "config"
-    DEPENDENCIES_ITEM = "dependencies"
-
-    @staticmethod
-    def create_instance(module_str, class_name_str, config, args):
-        """
-        Creates a new instance of a given class from a given module and passes a config dict.
-        """
-        class_module = importlib.import_module(module_str)
-        class_object = getattr(class_module, class_name_str)
-        return class_object(config, *args)
-
-    @staticmethod
-    def create_instances(instance_config_list):
-        """
-        Creates a list of objects from a given list of object configurations
-        """
-        objects = []
-        for instance_config in instance_config_list:
-            module_name = instance_config[WorkerFactory.MODULE_ITEM]
-            class_name = instance_config[WorkerFactory.CLASS_ITEM]
-            config = instance_config[WorkerFactory.CONFIG_ITEM]
-            dependency_config_list = instance_config[WorkerFactory.DEPENDENCIES_ITEM]
-            dependencies = []
-            if len(dependency_config_list) > 0:
-                dependencies.extend(WorkerFactory.create_instances(dependency_config_list))
-            objects.append(WorkerFactory.create_instance(module_name, class_name, config, dependencies))
-
-        return objects
-
-class ConfigHelper:
-    def __init__(self, file_path):
-        """
-        Initialize config helper
-        """
-        self.config = self.parse_config(self.load_config_file(file_path))
-
-    def parse_config(self, config_str):
-        """
-        Converts a json string into a dictionary
-        """
-        return json.loads(config_str)
-    
-    def get(self, key):
-        """
-        Returns the value for a given key
-        """
-        return self.config[key]
-
-    def load_config_file(self, file_path):
-        """
-        Reads config file and returns it as a json string
-        """
-        with open(file_path) as file:
-            config_str = file.read()
-
-        return config_str
+from extractor.sample.common.helpers import WorkerFactory, ConfigHelper
 
 class Extractor:
     CONSUMERS = "consumers"

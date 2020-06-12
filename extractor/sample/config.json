@@ -27,7 +27,20 @@
                         "odd_value_container_target":{"class":"price us"},
                         "game_type":"correct_score"
                     },
-                    "dependencies":[]
+                    "dependencies":[
+                        {
+                            "module":"extractor.sample.common.helpers",
+                            "class":"RequestsHelper",
+                            "config":null,
+                            "dependencies":[]
+                        },
+                        {
+                            "module":"extractor.sample.common.helpers",
+                            "class":"HtmlParserHelper",
+                            "config":null,
+                            "dependencies":[]
+                        }
+                    ]
                 },
                 {
                     "module":"extractor.sample.caliente.workers",
@@ -86,6 +99,18 @@
                         "delivery_mode":2,
                         "exchange":""
                     },
+                    "dependencies":[]
+                },
+                {
+                    "module":"extractor.sample.common.helpers",
+                    "class":"RequestsHelper",
+                    "config":null,
+                    "dependencies":[]
+                },
+                {
+                    "module":"extractor.sample.common.helpers",
+                    "class":"HtmlParserHelper",
+                    "config":null,
                     "dependencies":[]
                 }
             ]

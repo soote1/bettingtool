@@ -2,9 +2,6 @@ import json
 import datetime
 from multiprocessing import get_logger
 
-import requests
-from bs4 import BeautifulSoup
-
 from extractor.sample.common.model import Fetcher, Seeder, TimedWorker, Game
 from extractor.sample.common.messaging import Producer, Consumer
 
@@ -18,12 +15,16 @@ class CalienteFetcher(Fetcher):
     ODD_VALUE_CONTAINER_TYPE = "odd_value_container_type"
     ODD_VALUE_CONTAINER_TARGET = "odd_value_container_target"
     GAME_TYPE = "game_type"
+    HTTP_HELPER_PARAM = 0
+    HTML_HELPER_PARAM = 1
 
     def __init__(self, config, *args):
         """
         Initialize fetcher's instance.
         """
         self.name = CalienteFetcher.__name__
+        self.http_helper = args[self.HTTP_HELPER_PARAM]
+        self.html_helper = args[self.HTML_HELPER_PARAM]
         self.logger = get_logger()
         self.load_config(config)
 
@@ -51,7 +52,7 @@ class CalienteFetcher(Fetcher):
         """
         try:
             self.logger.info(f"{self.name} - fetching odds page from {url}")
-            odds_page = requests.get(url).text
+            odds_page = self.http_helper.get(url).text
         except Exception as error:
             self.logger.error(f"problems found while trying to get the data from {url} ... waiting for next attempt")
             self.logger.error(error)
@@ -69,7 +70,7 @@ class CalienteFetcher(Fetcher):
         """
         try:
             self.logger.info(f"{self.name} - parsing results")
-            soup = BeautifulSoup(odds_page, self.parser)
+            soup = self.html_helper.create_html_object(odds_page, self.parser)
             correct_score_table = soup.find(self.correct_score_game_container_type, self.correct_score_game_container_target)
             odds_container = correct_score_table.find_all(self.odds_container_type, self.odds_container_target)
             odds = []
@@ -123,6 +124,8 @@ class CalienteSeeder(Seeder):
     URL_DELIMITER = "url_delimiter"
     CACHE_CLIENT_PARAM = 0
     URL_PRODUCER_PARAM = 1
+    HTTP_HELPER_PARAM = 2
+    HTML_HELPER_PARAM = 3
 
     def __init__(self, config, *args):
         """
@@ -134,6 +137,8 @@ class CalienteSeeder(Seeder):
         self.logger = get_logger()
         self.cache = args[CalienteSeeder.CACHE_CLIENT_PARAM]
         self.message_producer = args[CalienteSeeder.URL_PRODUCER_PARAM]
+        self.http_helper = args[self.HTTP_HELPER_PARAM]
+        self.html_helper = args[self.HTML_HELPER_PARAM]
         self.cache.create_worker_state(self.name, self.NEW)
 
     def load_config(self, config):
@@ -214,14 +219,14 @@ class CalienteSeeder(Seeder):
         """
         self.logger.info(f"fetching leagues' URLs from {self.leagues_url}")
         try:
-            football_leagues_page = requests.get(self.leagues_url).text
+            football_leagues_page = self.http_helper.get(self.leagues_url).text
         except Exception as error:
             self.logger.error("problems found while making the http request... waiting for next attempt")
             self.logger.error(error)
             return
 
         try:
-            soup = BeautifulSoup(football_leagues_page, self.html_parser)
+            soup = self.html_helper.create_html_object(football_leagues_page, self.html_parser)
             league_urls_container = soup.find(self.leagues_container_type, self.leagues_container_target)
             league_url_elements = league_urls_container.findAll(self.league_url_type)
             league_urls = []
@@ -265,7 +270,7 @@ class CalienteSeeder(Seeder):
             return
 
         try:
-            league_games_page = requests.get(url).text
+            league_games_page = self.http_helper.get(url).text
         except Exception as error:
             self.logger.error("problems found while making the http request... waiting for next attempt")
             self.logger.error(error)
@@ -273,7 +278,7 @@ class CalienteSeeder(Seeder):
 
         try:
             self.logger.info(f"fetching odds for all games in league {url}")
-            soup = BeautifulSoup(league_games_page, self.html_parser)
+            soup = self.html_helper.create_html_object(league_games_page, self.html_parser)
             games_table = soup.find_all(self.games_container_type, self.games_container_target)
             game_odds_list = []
             for match in games_table:
