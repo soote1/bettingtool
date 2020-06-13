@@ -15,16 +15,14 @@ class CalienteFetcher(Fetcher):
     ODD_VALUE_CONTAINER_TYPE = "odd_value_container_type"
     ODD_VALUE_CONTAINER_TARGET = "odd_value_container_target"
     GAME_TYPE = "game_type"
-    HTTP_HELPER_PARAM = 0
-    HTML_HELPER_PARAM = 1
 
-    def __init__(self, config, *args):
+    def __init__(self, config, http_helper, html_helper):
         """
         Initialize fetcher's instance.
         """
         self.name = CalienteFetcher.__name__
-        self.http_helper = args[self.HTTP_HELPER_PARAM]
-        self.html_helper = args[self.HTML_HELPER_PARAM]
+        self.http_helper = http_helper
+        self.html_helper = html_helper
         self.logger = get_logger()
         self.load_config(config)
 
@@ -83,7 +81,7 @@ class CalienteFetcher(Fetcher):
             return None
 
 class CalienteOddsProducer(Producer):
-    def __init__(self, config, *args):
+    def __init__(self, config):
         """
         Initialize odds producer.
         """
@@ -122,12 +120,8 @@ class CalienteSeeder(Seeder):
     ODDS_LINK_TARGET = "odds_link_target"
     TARGET_LEAGUES = "target_leagues"
     URL_DELIMITER = "url_delimiter"
-    CACHE_CLIENT_PARAM = 0
-    URL_PRODUCER_PARAM = 1
-    HTTP_HELPER_PARAM = 2
-    HTML_HELPER_PARAM = 3
 
-    def __init__(self, config, *args):
+    def __init__(self, config, cache_client, url_producer, http_helper, html_helper):
         """
         Initialize seeder instance.
         """
@@ -135,10 +129,10 @@ class CalienteSeeder(Seeder):
         self.name = CalienteSeeder.__name__
         self.load_config(config)
         self.logger = get_logger()
-        self.cache = args[CalienteSeeder.CACHE_CLIENT_PARAM]
-        self.message_producer = args[CalienteSeeder.URL_PRODUCER_PARAM]
-        self.http_helper = args[self.HTTP_HELPER_PARAM]
-        self.html_helper = args[self.HTML_HELPER_PARAM]
+        self.cache = cache_client
+        self.message_producer = url_producer
+        self.http_helper = http_helper
+        self.html_helper = html_helper
         self.cache.create_worker_state(self.name, self.NEW)
 
     def load_config(self, config):
@@ -313,18 +307,16 @@ class CalienteUrlConsumer(Consumer):
     PRODUCER_CONFIG = "producer_config"
     FETCHER_CONFIG = "fetcher_config"
     DECODE_FORMAT = "decode_format"
-    ODDS_FETCHER_PARAM = 0
-    ODDS_PRODUCER_PARAM = 1
 
-    def __init__(self, config, *args):
+    def __init__(self, config, odds_fetcher, odds_producer):
         """
         Initialize consumer instance.
         """
         super().__init__(CalienteUrlConsumer.__name__, config)
         self.logger = get_logger()
         self.load_config(config)
-        self.odds_fetcher = args[CalienteUrlConsumer.ODDS_FETCHER_PARAM]
-        self.odds_producer = args[CalienteUrlConsumer.ODDS_PRODUCER_PARAM]
+        self.odds_fetcher = odds_fetcher
+        self.odds_producer = odds_producer
 
     def load_config(self, config):
         """
@@ -374,7 +366,7 @@ class CalienteUrlConsumer(Consumer):
         return self.odds_producer.send_odds(odds)
 
 class CalienteUrlProducer(Producer):
-    def __init__(self, config, *args):
+    def __init__(self, config):
         """
         Initialize producer instance.
         """
@@ -391,14 +383,17 @@ class CalienteUrlProducer(Producer):
 
 class CalienteCacheCleaner(TimedWorker):
     WAIT_TIME = "wait_time"
-    CACHE_CLIENT_PARAM = 0
-    def __init__(self, config, *args):
+    def __init__(self, config, cache_client):
         """
         Initialize cache cleaner instance
         """
-        super().__init__(config[self.WAIT_TIME])
+        self.load_config(config)
+        super().__init__(self.wait_time)
         self.logger = get_logger()
-        self.cache_client = args[CalienteCacheCleaner.CACHE_CLIENT_PARAM]
+        self.cache_client = cache_client
+
+    def load_config(self, config):
+        self.wait_time = config[CalienteCacheCleaner.WAIT_TIME]
 
     def do_work(self):
         """
