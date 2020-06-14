@@ -120,6 +120,7 @@ class CalienteSeeder(Seeder):
     ODDS_LINK_TARGET = "odds_link_target"
     TARGET_LEAGUES = "target_leagues"
     URL_DELIMITER = "url_delimiter"
+    TARGET_GAMES = "target_games"
 
     def __init__(self, config, cache_client, url_producer, http_helper, html_helper):
         """
@@ -150,8 +151,11 @@ class CalienteSeeder(Seeder):
             self.odds_container_target = config[self.ODDS_CONTAINER_TARGET]
             self.odds_link_target = config[self.ODDS_LINK_TARGET]
             self.html_parser = config[self.HTML_PARSER]
+            # convert target list to set to perform O(1) access
             self.target_leagues = {*config[self.TARGET_LEAGUES]}
             self.url_delimiter = config[self.URL_DELIMITER]
+            # convert target list to set to perform O(1) access
+            self.target_games = {*config[self.TARGET_GAMES]}
         except Exception as error:
             self.logger.error(f"invalid configuration for {self.name}")
             self.logger.error(error)
@@ -242,6 +246,10 @@ class CalienteSeeder(Seeder):
         """
         Removes all leagues which aren't in target_list property
         """
+        # avoid filter if target_leagues list is empty
+        if len(self.target_leagues) == 0:
+            return leagues
+
         self.logger.info("filtering target leagues")
         filtered_leagues = []
         for league in leagues:
@@ -249,6 +257,20 @@ class CalienteSeeder(Seeder):
             if league_name in self.target_leagues:
                 filtered_leagues.append(league)
         return filtered_leagues
+
+    def filter_games(self, games):
+        self.logger.info("filtering target games")
+        # avoid filter if target_games list is empty
+        if len(self.target_games) == 0:
+            return games
+
+        filtered_games = []
+        for game in games:
+            game_name = game.split(self.url_delimiter)[-1]
+            if game_name in self.target_games:
+                filtered_games.append(game)
+        return filtered_games
+
 
     def get_games(self):
         """
@@ -284,7 +306,7 @@ class CalienteSeeder(Seeder):
             self.logger.error(error)
             return
 
-        self.save_game_odds_urls(game_odds_list)
+        self.save_game_odds_urls(self.filter_games(game_odds_list))
 
     def save_game_odds_urls(self, game_odds_urls):
         self.logger.info("saving game odds' links in cache server")

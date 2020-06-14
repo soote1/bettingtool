@@ -10,7 +10,7 @@
                     "queue_name":"caliente_url_queue",
                     "durable":true,
                     "prefetch_count":1,
-                    "wait_time":5,
+                    "wait_time":1,
                     "decode_format":"utf-8"
                 },
                 {
@@ -78,7 +78,8 @@
                     "odds_link_target":"href",
                     "html_parser":"lxml",
                     "target_leagues":["La-Liga"],
-                    "url_delimiter":"/"
+                    "url_delimiter":"/",
+                    "target_games":["Athletic-Bilbao-vs-Atletico-Madrid"]
                 },
                 {
                     "module":"extractor.sample.caliente.cache",
