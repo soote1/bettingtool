@@ -24,8 +24,12 @@
                             "odds_container_type":"button",
                             "odds_container_target":{"class":"price"},
                             "odd_label_target":"title",
-                            "odd_value_container_type":"span",
-                            "odd_value_container_target":{"class":"price us"},
+                            "odd_price_us_container_type":"span",
+                            "odd_price_us_target_class":{"class":"price us"},
+                            "odd_price_frac_container_type":"span",
+                            "odd_price_frac_target_class":{"class":"price frac"},
+                            "odd_price_dec_container_type":"span",
+                            "odd_price_dec_target_class":{"class":"price dec"},
                             "game_type":"correct_score"
                         },
                         {
@@ -79,7 +83,7 @@
                     "html_parser":"lxml",
                     "target_leagues":["La-Liga"],
                     "url_delimiter":"/",
-                    "target_games":["Athletic-Bilbao-vs-Atletico-Madrid"]
+                    "target_games":[]
                 },
                 {
                     "module":"extractor.sample.caliente.cache",

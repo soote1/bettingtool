@@ -2,7 +2,7 @@ import json
 import datetime
 from multiprocessing import get_logger
 
-from extractor.sample.common.model import Fetcher, Seeder, TimedWorker, Game
+from extractor.sample.common.model import Fetcher, Seeder, TimedWorker, GameMetadata
 from extractor.sample.common.messaging import Producer, Consumer
 
 class CalienteFetcher(Fetcher):
@@ -12,8 +12,12 @@ class CalienteFetcher(Fetcher):
     ODDS_CONTAINER_TYPE = "odds_container_type"
     ODDS_CONTAINER_TARGET = "odds_container_target"
     ODD_LABEL_TARGET = "odd_label_target"
-    ODD_VALUE_CONTAINER_TYPE = "odd_value_container_type"
-    ODD_VALUE_CONTAINER_TARGET = "odd_value_container_target"
+    ODD_PRICE_US_CONTAINER_TYPE = "odd_price_us_container_type"
+    ODD_PRICE_US_TARGET_CLASS = "odd_price_us_target_class"
+    ODD_PRICE_FRAC_CONTAINER_TYPE = "odd_price_frac_container_type"
+    ODD_PRICE_FRAC_TARGET_CLASS = "odd_price_frac_target_class"
+    ODD_PRICE_DEC_CONTAINER_TYPE = "odd_price_dec_container_type"
+    ODD_PRICE_DEC_TARGET_CLASS = "odd_price_dec_target_class"
     GAME_TYPE = "game_type"
 
     def __init__(self, config, http_helper, html_helper):
@@ -35,8 +39,12 @@ class CalienteFetcher(Fetcher):
             self.odds_container_type = config[self.ODDS_CONTAINER_TYPE]
             self.odds_container_target = config[self.ODDS_CONTAINER_TARGET]
             self.odd_label_target = config[self.ODD_LABEL_TARGET]
-            self.odd_value_container_type = config[self.ODD_VALUE_CONTAINER_TYPE]
-            self.odd_value_container_taget = config[self.ODD_VALUE_CONTAINER_TARGET]
+            self.odd_price_us_container_type = config[self.ODD_PRICE_US_CONTAINER_TYPE]
+            self.odd_price_us_target_class = config[self.ODD_PRICE_US_TARGET_CLASS]
+            self.odd_price_frac_container_type = config[self.ODD_PRICE_FRAC_CONTAINER_TYPE]
+            self.odd_price_frac_target_class = config[self.ODD_PRICE_FRAC_TARGET_CLASS]
+            self.odd_price_dec_container_type = config[self.ODD_PRICE_DEC_CONTAINER_TYPE]
+            self.odd_price_dec_target_class = config[self.ODD_PRICE_DEC_TARGET_CLASS]
             self.game_type = config[self.GAME_TYPE]
         except Exception as error:
             self.logger.error(f"invalid configuration for {CalienteFetcher.__name__} class")
@@ -71,14 +79,22 @@ class CalienteFetcher(Fetcher):
             soup = self.html_helper.create_html_object(odds_page, self.parser)
             correct_score_table = soup.find(self.correct_score_game_container_type, self.correct_score_game_container_target)
             odds_container = correct_score_table.find_all(self.odds_container_type, self.odds_container_target)
-            odds = []
+            odd_metadata_list = []
             for odd in odds_container:
-                odd_values = [odd[self.odd_label_target], odd.find(self.odd_value_container_type, self.odd_value_container_taget).text]
-                odds.append(odd_values)
-            return Game(url, self.game_type, odds)
+                odd_metadata = self.extract_odd_metadata(odd)
+                odd_metadata_list.append(odd_metadata)
+            return GameMetadata(url, self.game_type, odd_metadata_list, datetime.datetime.utcnow())
         except Exception as error:
             self.logger.error(f"{self.name} error found while trying to extract the data from the html tree {error}")    
             return None
+    
+    def extract_odd_metadata(self, odd_html_element):
+        label = odd_html_element[self.odd_label_target]
+        price_frac = odd_html_element.find(self.odd_price_frac_container_type, self.odd_price_frac_target_class).text
+        price_dec = odd_html_element.find(self.odd_price_dec_container_type, self.odd_price_dec_target_class).text
+        price_us = odd_html_element.find(self.odd_price_us_container_type, self.odd_price_us_target_class).text
+
+        return [label, price_frac, price_dec, price_us]
 
 class CalienteOddsProducer(Producer):
     def __init__(self, config):
@@ -96,7 +112,7 @@ class CalienteOddsProducer(Producer):
         and passes the serialized odds as argument.
         """
         self.logger.info(f"serializing {odds} to json format")
-        serialized_product = json.dumps(odds.__dict__)
+        serialized_product = json.dumps(odds.__dict__, default=str)
         return self.produce(serialized_product)
 
 class CalienteSeeder(Seeder):

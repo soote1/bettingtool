@@ -86,7 +86,7 @@ class CalienteSeederCache(CacheClient):
             self.save_game(game_url, crawled_at)
     
     def save_game(self, match_url, last_crawl):
-        self.logger.info(f"saving new game with url={match_url} processing_count={last_crawl}")
+        self.logger.info(f"saving new game with url={match_url} last_crawl={last_crawl}")
         Game.__database__ = self.client
         Game.create(url=match_url, last_crawl=last_crawl)
 
