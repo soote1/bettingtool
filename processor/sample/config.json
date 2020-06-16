@@ -1,0 +1,16 @@
+{
+    "arbitrage_betting_processor":{
+        "initial_action":{
+            "module":"processor.sample.actionmanager.actions",
+            "class":"DuplicateFilter",
+            "config":{},
+            "next_action":"incomplete_scores_filter"
+        },
+        "incomplete_scores_filter":{
+            "module":"processor.sample.actionmanager.actions",
+            "class":"IncompleteScoresFilter",
+            "config":{},
+            "next_action":""
+        }
+    }
+}
