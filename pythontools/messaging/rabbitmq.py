@@ -2,13 +2,12 @@ from multiprocessing import get_logger
 
 import pika
 
-from processor.sample.common.model import Worker
+from pythontools.workermanager.workers import Worker
 
 HOST_NAME = "host_name"
 QUEUE_NAME = "queue_name"
 PREFETCH_COUNT = "prefetch_count"
 DURABLE = "durable"
-WAIT_TIME = "wait_time"
 EXCHANGE = "exchange"
 DELIVERY_MODE = "delivery_mode"
 
@@ -88,7 +87,6 @@ class Consumer(Worker): # TODO: fix this, consumer class shouldn't extend from o
             self.durable = config[DURABLE]
             self.queue_name = config[QUEUE_NAME]
             self.prefetch_count = config[PREFETCH_COUNT]
-            self.wait_time = config[WAIT_TIME]
         except Exception as error:
             self.logger.error(f"invalid configuration for {Consumer.__name__} class")
             self.logger.error(error)
@@ -127,4 +125,3 @@ class Consumer(Worker): # TODO: fix this, consumer class shouldn't extend from o
         This is the signature for the pika client's on_message_callback method.
         """
         pass
-

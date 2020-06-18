@@ -1,4 +1,4 @@
-from processor.sample.actionmanager.actions import BaseAction
+from pythontools.actionmanager.actions import BaseAction
 
 class DuplicateFilter(BaseAction):
     """

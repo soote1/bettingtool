@@ -1,4 +1,4 @@
-from processor.sample.actionmanager.helpers import ActionFactory
+from pythontools.actionmanager.helpers import ActionFactory
 
 class ActionManager:
     """

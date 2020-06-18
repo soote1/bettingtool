@@ -2,8 +2,8 @@ import time
 import logging
 from multiprocessing import Event, Process, get_logger, log_to_stderr
 
-from processor.sample.common.model import Worker, TimedWorker
-from processor.sample.workermanager.helpers import ConfigHelper, WorkerFactory
+from pythontools.workermanager.workers import Worker, TimedWorker
+from pythontools.workermanager.helpers import ConfigHelper, WorkerFactory
 
 class WorkerManager:
     PROCESSORS = "processors"

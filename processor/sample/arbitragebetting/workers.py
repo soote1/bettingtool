@@ -1,8 +1,8 @@
 import json
 from multiprocessing import get_logger
 
-from processor.sample.common.messaging import Consumer, Producer
-from processor.sample.actionmanager.manager import ActionManager
+from pythontools.messaging.rabbitmq import Consumer, Producer
+from pythontools.actionmanager.manager import ActionManager
 
 class OddsConsumer(Consumer):
     def __init__(self, config, outcome_producer, action_manager):

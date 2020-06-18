@@ -10,7 +10,6 @@
                     "queue_name":"caliente_odds_queue",
                     "durable":true,
                     "prefetch_count":1,
-                    "wait_time":1,
                     "decode_format":"utf-8"
                 },
                 {
@@ -27,7 +26,7 @@
                     ]
                 },
                 {
-                    "module":"processor.sample.actionmanager.manager",
+                    "module":"pythontools.actionmanager.manager",
                     "class":"ActionManager",
                     "args":[
                         {
