@@ -1,72 +1,95 @@
 import time
 import logging
-from multiprocessing import Event, Process, get_logger, log_to_stderr
+from multiprocessing import Event, Process, get_logger
 
 from pythontools.workermanager.workers import Worker, TimedWorker
-from pythontools.workermanager.helpers import ConfigHelper, WorkerFactory
+from pythontools.workermanager.helpers import WorkerFactory
 
 class WorkerManager:
-    PROCESSORS = "processors"
+    WORKERS = "workers"
     WAIT_TIME = "wait_time"
 
-    def __init__(self, config_file_path):
+    def __init__(self, config):
         """
-        Initialize extractor instance.
+        Initializes manager's instance variables.
         """
-        log_to_stderr()
         self.logger = get_logger()
         self.logger.setLevel(logging.INFO)
-        self.processors = []
-        self.processes = []
-        self.config_helper = ConfigHelper(config_file_path)
-        self.load_config()
+        self.wait_time = -1
+        self.workers_config_list = []
+        self.load_config(config)
 
     
-    def load_config(self):
+    def load_config(self, config):
         """
-        Creates workers instances.
+        Checks that the configuration contains the keys
+        for wait time value, and workers config list so that
+        it can load the values into instance's variables.
         """
         try:
-            self.logger.info(f"loading WorkerManager config {self.config_helper.config}")
-            self.load_processors()
-        except Exception as error:
-            self.logger.error(f"invalid configuration for {WorkerManager.__name__} class")
-            self.logger.error(error)
-            raise error
+            self.logger.info(f"loading {self.__class__.__name__} config => {config}")
+            self.wait_time = config[WorkerManager.WAIT_TIME]
+            self.workers_config_list = config[WorkerManager.WORKERS]
+        except KeyError:
+            self.logger.error(f"invalid configuration for {self.__class__.__name__} class")
+            raise
+        
 
+    def create_workers(self, workers_config_list):
+        """
+        Creates a list of worker instances from a given worker config list 
+        using WorkerFactory helper.
+        """
+        return WorkerFactory.create_instances(workers_config_list)
 
-    def load_processors(self):
+    def create_processes(self, worker_instances, keyboard_interrupt_event=None):
         """
-        Creates processor instances.
+        Creates a list of Process objects and binds a worker instance to each object.
         """
-        processors_configurations = self.config_helper.get(WorkerManager.PROCESSORS)
-        self.processors = WorkerFactory.create_instances(processors_configurations)
-
-    def run(self):
-        """
-        Starts all processes and stop them when keyboard interrupt signal is received.
-        """
-        keyboard_interrupt_event = Event()
-        worker_instances = self.processors
-        # create processes
+        processes = []
         for worker_instance in worker_instances:
             if isinstance(worker_instance, Worker):
                 process = Process(target=worker_instance.run)
             if isinstance(worker_instance, TimedWorker):
                 process = Process(target=worker_instance.run, args=(keyboard_interrupt_event,))
-            self.processes.append(process)
+                processes.append(process)
+        return processes
 
-        # start all processes
-        for process in self.processes:
+    def start_processes(self, processes):
+        """
+        Starts a list of processes
+        """
+        for process in processes:
             process.start()
 
+    def stop_processes(self, processes):
+        """
+        Sotps a list of processes
+        """
+        for process in processes:
+            process.join()
+
+    def run(self):
+        """
+        Starts a list of processes and stop them when keyboard interrupt signal is received.
+        """
+        # create worker instances
+        worker_instances = self.create_workers(self.workers_config_list)
+        # create shutdown event
+        keyboard_interrupt_event = Event()
+        # create processes
+        processes = self.create_processes(worker_instances, keyboard_interrupt_event)
+        # start all processes
+        self.start_processes(processes)
+
+        # wait for KeyboardInterrupt error
         while True:
             try:
-                time.sleep(self.config_helper.get(WorkerManager.WAIT_TIME))
-            except KeyboardInterrupt as error:
+                time.sleep(self.wait_time)
+            except KeyboardInterrupt:
                 self.logger.info("sending shutdown signal to child processes")
                 keyboard_interrupt_event.set()
                 break
-        
-        for process in self.processes:
-            process.join()
+
+        # kill the processes
+        self.stop_processes(processes)

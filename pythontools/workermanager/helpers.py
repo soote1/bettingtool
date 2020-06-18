@@ -36,31 +36,3 @@ class WorkerFactory(object):
                 objects.append(instance_config)
 
         return objects
-
-class ConfigHelper:
-    def __init__(self, file_path):
-        """
-        Initialize config helper
-        """
-        self.config = self.parse_config(self.load_config_file(file_path))
-
-    def parse_config(self, config_str):
-        """
-        Converts a json string into a dictionary
-        """
-        return json.loads(config_str)
-    
-    def get(self, key):
-        """
-        Returns the value for a given key
-        """
-        return self.config[key]
-
-    def load_config_file(self, file_path):
-        """
-        Reads config file and returns it as a json string
-        """
-        with open(file_path) as file:
-            config_str = file.read()
-
-        return config_str
