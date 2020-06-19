@@ -70,7 +70,7 @@ class Producer:
             self.logger.error(error)
             raise error
 
-class Consumer(Worker): # TODO: fix this, consumer class shouldn't extend from other package
+class Consumer:
     def __init__(self, name, config):
         """
         Initialize consumer with given config and name and calls connect_to_broker
@@ -115,7 +115,7 @@ class Consumer(Worker): # TODO: fix this, consumer class shouldn't extend from o
         try:
             self.logger.info("starting consuming")
             self.channel.start_consuming()
-        except KeyboardInterrupt as error:
+        except KeyboardInterrupt:
             self.logger.info("closing consumer")
             self.channel.close()
 
