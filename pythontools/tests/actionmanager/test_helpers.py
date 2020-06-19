@@ -1,4 +1,4 @@
-from processor.sample.actionmanager.helpers import ActionFactory
+from pythontools.actionmanager.helpers import ActionFactory
 
 class TestActionFactory:
     def test_create_action(self, action_metadata_mock, action_object_mock):
