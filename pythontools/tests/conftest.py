@@ -11,6 +11,16 @@ class WorkerMock(TimedWorker):
     def do_work(self):
         return
 
+class InvalidWorkerType:
+    def __init__(self, config):
+        self.config = config
+
+    def run(self):
+        return
+    
+    def do_work(self):
+        return
+
 @pytest.fixture
 def worker_manager_config():
     return {
@@ -24,6 +34,42 @@ def worker_manager_config():
             {
                 "module":"pythontools.tests.conftest",
                 "class":"WorkerMock",
+                "args":[{"wait_time":1}]
+            }
+        ]
+    }
+
+@pytest.fixture
+def worker_manager_config_invalid_worker_type():
+    return {
+        "wait_time":5,
+        "workers":[
+            {
+                "module":"pythontools.tests.conftest",
+                "class":"WorkerMock",
+                "args":[{"wait_time":1}]
+            },
+            {
+                "module":"pythontools.tests.conftest",
+                "class":"InvalidWorkerType",
+                "args":[{"wait_time":1}]
+            }
+        ]
+    }
+
+@pytest.fixture
+def worker_manager_config_invalid_worker_metadata():
+    return {
+        "wait_time":5,
+        "workers":[
+            {
+                "module":"pythontools.tests.conftest",
+                "class":"WorkerMock",
+                "args":[{"wait_time":1}]
+            },
+            {
+                "module":"pythontools.tests.conftest",
+                "class":"UnexistingClass",
                 "args":[{"wait_time":1}]
             }
         ]
