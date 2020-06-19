@@ -40,5 +40,5 @@ class TimedWorker(Worker):
                 if do_work:
                     self.do_work()
                 shutdown_event.wait(self.wait_time)
-            except KeyboardInterrupt as error:
+            except KeyboardInterrupt:
                 do_work = False

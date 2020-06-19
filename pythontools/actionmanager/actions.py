@@ -1,4 +1,5 @@
 class BaseAction:
+    NEXT_ACTION = "next_action"
     """
     Base action
     """
@@ -9,4 +10,4 @@ class BaseAction:
         raise NotImplementedError
     
     def get_next_action(self):
-        return self.config["next_action"]
+        return self.config[BaseAction.NEXT_ACTION]
