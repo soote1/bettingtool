@@ -4,6 +4,7 @@ from multiprocessing import Event, Process, get_logger
 
 from pythontools.workermanager.workers import Worker, TimedWorker
 from pythontools.workermanager.helpers import WorkerFactory
+from pythontools.workermanager.errors import WorkerManagerError
 
 class WorkerManager:
     WORKERS = "workers"
@@ -30,9 +31,8 @@ class WorkerManager:
             self.logger.info(f"loading {self.__class__.__name__} config => {config}")
             self.wait_time = config[WorkerManager.WAIT_TIME]
             self.workers_config_list = config[WorkerManager.WORKERS]
-        except KeyError:
-            self.logger.error(f"invalid configuration for {self.__class__.__name__} class")
-            raise
+        except KeyError as error:
+            raise WorkerManagerError(f"Invalid configuration for worker manager => {error}")
         
 
     def create_workers(self, workers_config_list):
@@ -40,7 +40,10 @@ class WorkerManager:
         Creates a list of worker instances from a given worker config list 
         using WorkerFactory helper.
         """
-        return WorkerFactory.create_instances(workers_config_list)
+        try:
+            return WorkerFactory.create_instances(workers_config_list)
+        except Exception:
+            raise WorkerManagerError("Invalid worker metadata in workers configuration key")
 
     def create_processes(self, worker_instances, keyboard_interrupt_event=None):
         """
@@ -53,6 +56,8 @@ class WorkerManager:
             if isinstance(worker_instance, TimedWorker):
                 process = Process(target=worker_instance.run, args=(keyboard_interrupt_event,))
                 processes.append(process)
+            else:
+                raise WorkerManagerError(f"Invalid worker type received => {type(worker_instance)}")
         return processes
 
     def start_processes(self, processes):
