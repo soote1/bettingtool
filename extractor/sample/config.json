@@ -1,6 +1,26 @@
 {
     "wait_time":1,
-    "consumers":[
+    "workers":[
+        {
+            "module":"extractor.sample.caliente.workers",
+            "class":"CalienteCacheCleaner",
+            "args":[
+                {
+                    "wait_time":86400
+                },    
+                {
+                    "module":"extractor.sample.common.cache",
+                    "class":"CacheClient",
+                    "args":[
+                        {
+                            "host":"localhost",
+                            "port": 6379,
+                            "db":0
+                        }
+                    ]
+                }
+            ]
+        },
         {
             "module":"extractor.sample.caliente.workers",
             "class":"CalienteUrlConsumer",
@@ -60,9 +80,7 @@
                     ]
                 }
             ]
-        }
-    ],
-    "seeders":[
+        },
         {
             "module":"extractor.sample.caliente.workers", 
             "class":"CalienteSeeder",
@@ -118,28 +136,6 @@
                     "module":"extractor.sample.common.helpers",
                     "class":"HtmlParserHelper",
                     "args":[]
-                }
-            ]
-        }
-    ],
-    "tools":[
-        {
-            "module":"extractor.sample.caliente.workers",
-            "class":"CalienteCacheCleaner",
-            "args":[
-                {
-                    "wait_time":86400
-                },    
-                {
-                    "module":"extractor.sample.common.cache",
-                    "class":"CacheClient",
-                    "args":[
-                        {
-                            "host":"localhost",
-                            "port": 6379,
-                            "db":0
-                        }
-                    ]
                 }
             ]
         }

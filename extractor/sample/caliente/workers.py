@@ -2,10 +2,11 @@ import json
 import datetime
 from multiprocessing import get_logger
 
-from extractor.sample.common.model import Fetcher, Seeder, TimedWorker, GameMetadata
-from extractor.sample.common.messaging import Producer, Consumer
+from extractor.sample.common.model import GameMetadata
+from pythontools.workermanager.workers import TimedWorker
+from pythontools.messaging.rabbitmq import Producer, Consumer
 
-class CalienteFetcher(Fetcher):
+class CalienteFetcher:
     PARSER = "parser"
     CORRECT_SCORE_GAME_CONTAINER_TYPE = "correct_score_game_container_type"
     CORRECT_SCORE_GAME_CONTAINER_TARGET = "correct_score_game_container_target"
@@ -115,7 +116,7 @@ class CalienteOddsProducer(Producer):
         serialized_product = json.dumps(odds.__dict__, default=str)
         return self.produce(serialized_product)
 
-class CalienteSeeder(Seeder):
+class CalienteSeeder(TimedWorker):
     NEW = "new"
     FETCHING_LEAGUES = "fetching_leagues"
     FETCHING_GAMES = "fetching_games"
@@ -144,8 +145,8 @@ class CalienteSeeder(Seeder):
         """
         super().__init__(config[self.WAIT_TIME])
         self.name = CalienteSeeder.__name__
-        self.load_config(config)
         self.logger = get_logger()
+        self.load_config(config)
         self.cache = cache_client
         self.message_producer = url_producer
         self.http_helper = http_helper
