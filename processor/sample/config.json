@@ -1,6 +1,6 @@
 {
     "wait_time":5,
-    "processors":[
+    "workers":[
         {
             "module":"processor.sample.arbitragebetting.workers",
             "class":"OddsConsumer",
@@ -30,6 +30,7 @@
                     "class":"ActionManager",
                     "args":[
                         {
+                            "max_attempts":2,
                             "initial_action":{
                                 "module":"processor.sample.arbitragebetting.actions",
                                 "class":"DuplicateFilter",

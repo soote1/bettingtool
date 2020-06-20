@@ -1,6 +1,10 @@
 import os
+import json
 
 from pythontools.workermanager.manager import WorkerManager
 
-worker_manager = WorkerManager(f"{os.path.dirname(__file__)}/config.json")
+with open(f"{os.path.dirname(__file__)}/config.json") as file:
+    config = json.loads(file.read())
+
+worker_manager = WorkerManager(config)
 worker_manager.run()
