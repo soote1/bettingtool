@@ -51,13 +51,15 @@ class WorkerManager:
         """
         processes = []
         for worker_instance in worker_instances:
-            if isinstance(worker_instance, Worker):
-                process = Process(target=worker_instance.run)
             if isinstance(worker_instance, TimedWorker):
                 process = Process(target=worker_instance.run, args=(keyboard_interrupt_event,))
-                processes.append(process)
+            elif isinstance(worker_instance, Worker):
+                process = Process(target=worker_instance.run)
+            elif callable(getattr(worker_instance, "run", None)):
+                process = Process(target=worker_instance.run)
             else:
                 raise WorkerManagerError(f"Invalid worker type received => {type(worker_instance)}")
+            processes.append(process)
         return processes
 
     def start_processes(self, processes):
