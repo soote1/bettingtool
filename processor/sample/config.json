@@ -34,14 +34,12 @@
                             "initial_action":{
                                 "module":"processor.sample.arbitragebetting.actions",
                                 "class":"DuplicateFilter",
-                                "config":{},
-                                "next_action":"incomplete_scores_filter"
+                                "config":{"next_action":"incomplete_scores_filter"}
                             },
                             "incomplete_scores_filter":{
                                 "module":"processor.sample.arbitragebetting.actions",
                                 "class":"IncompleteScoresFilter",
-                                "config":{},
-                                "next_action":""
+                                "config":{"next_action":""}
                             }
                         }
                     ]
