@@ -2,7 +2,7 @@ from multiprocessing import Process
 
 from pythontools.workermanager.manager import WorkerManager
 from pythontools.workermanager.errors import WorkerManagerError
-from pythontools.tests.conftest import WorkerMock
+from pythontools.tests.conftest import TimedWorkerMock
 
 class TestWorkerManager:
     """
@@ -41,9 +41,7 @@ class TestWorkerManager:
             assert True
 
     def test_create_workers(self, worker_manager_config):
-        workers = self.get_manager_and_workers(worker_manager_config)[1]
-        for worker in workers:
-            assert isinstance(worker, WorkerMock)
+        self.get_manager_and_workers(worker_manager_config)[1]
 
     def test_create_workers_invalid_worker_metadata(self, worker_manager_config_invalid_worker_metadata):
         try:

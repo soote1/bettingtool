@@ -1,22 +1,35 @@
 import pytest
 
-from pythontools.workermanager.workers import TimedWorker
+from pythontools.workermanager.workers import TimedWorker, Worker
 from pythontools.actionmanager.actions import BaseAction
 from pythontools.actionmanager.errors import ActionError
 
-class WorkerMock(TimedWorker):
+class WorkerMock(Worker):
+    def __init__(self, config):
+        self.config = config
+
+    def run(self):
+        return
+
+    def do_work(self):
+        return
+
+class TimedWorkerMock(TimedWorker):
     def __init__(self, config):
         super().__init__(config)
 
     def do_work(self):
         return
 
+class ClassWithRunMethod:
+    def __init__(self, config):
+        self.config = config    
+    def run(self):
+        return
+
 class InvalidWorkerType:
     def __init__(self, config):
         self.config = config
-
-    def run(self):
-        return
     
     def do_work(self):
         return
@@ -33,7 +46,12 @@ def worker_manager_config():
             },
             {
                 "module":"pythontools.tests.conftest",
-                "class":"WorkerMock",
+                "class":"TimedWorkerMock",
+                "args":[{"wait_time":1}]
+            },
+            {
+                "module":"pythontools.tests.conftest",
+                "class":"ClassWithRunMethod",
                 "args":[{"wait_time":1}]
             }
         ]
@@ -46,7 +64,7 @@ def worker_manager_config_invalid_worker_type():
         "workers":[
             {
                 "module":"pythontools.tests.conftest",
-                "class":"WorkerMock",
+                "class":"TimedWorkerMock",
                 "args":[{"wait_time":1}]
             },
             {
@@ -64,7 +82,7 @@ def worker_manager_config_invalid_worker_metadata():
         "workers":[
             {
                 "module":"pythontools.tests.conftest",
-                "class":"WorkerMock",
+                "class":"TimedWorkerMock",
                 "args":[{"wait_time":1}]
             },
             {
