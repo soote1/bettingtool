@@ -18,7 +18,7 @@ class TestActionManager:
 
     def test_create_action(self, action_manager_config_mock):
         action_manager = ActionManager(action_manager_config_mock)
-        action = action_manager.create_action("initial_action")
+        action = action_manager.create_action(action_manager_config_mock["initial_action"])
         assert isinstance(action, BaseAction)
     
     def test_create_action_invalid_name(self, action_manager_config_mock):
@@ -41,10 +41,11 @@ class TestActionManager:
     def test_run_workflow(self, action_manager_config_mock):
         """
         Should execute action manager workflow and
-        return the result object
+        return True as execution result.
         """
         action_manager = ActionManager(action_manager_config_mock)
-        action_manager.run_workflow({})
+        success = action_manager.run_workflow({})
+        assert success
 
     def test_run_workflow_with_invalid_next_action(self, action_manager_config_mock):
         """
@@ -70,13 +71,3 @@ class TestActionManager:
             assert False
         except ActionError:
             assert True
-    
-    def test_re_attempt_workflow(self, action_manager_config_reattempt_mock):
-        """
-        Should execute action manager workflow and
-        return the result object
-        """
-        action_manager = ActionManager(action_manager_config_reattempt_mock)
-        success = action_manager.run_workflow({})
-        assert not success
-        assert action_manager.current_attempt == action_manager_config_reattempt_mock["max_attempts"]
