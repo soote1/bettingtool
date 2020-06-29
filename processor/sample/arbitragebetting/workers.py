@@ -31,7 +31,7 @@ class OddsConsumer(Consumer):
         Get some odds from the odds queue and process them to generate outcomes
         """
         self.logger.info(f"received new message with body => {body}")
-        success = self.action_manager.run_workflow(body)
+        success = self.action_manager.run_workflow(body.decode())
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
