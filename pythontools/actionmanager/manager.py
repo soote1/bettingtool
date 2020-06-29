@@ -12,7 +12,6 @@ class ActionManager:
     CONFIG = "config"
     NEXT_ACTION = "next_action"
     INITIAL_ACTION = "initial_action"
-    MAX_ATTEMPS = "max_attempts"
 
     def __init__(self, config):
         """
@@ -20,19 +19,17 @@ class ActionManager:
         An ActionManagerError is thrown if invalid config.
         """
         self.config = config
-        self.load_config()
+        self.validate_config()
     
-    def load_config(self):
+    def validate_config(self):
         """
         Validates action manager configuration.
         An ActionManagerError is thrown if invalid config.
         """
         try:
-            self.max_attempts = self.config[ActionManager.MAX_ATTEMPS]
-            self.current_attempt = 0
-            self.current_action = self.create_action(ActionManager.INITIAL_ACTION)
+            self.config[ActionManager.INITIAL_ACTION]
         except KeyError as error:
-            raise ActionManagerError(f"Error while accesing action config. {error}")
+            raise ActionManagerError(f"Missing configuration key. {error}")
 
     def run_workflow(self, data):
         """
@@ -47,14 +44,15 @@ class ActionManager:
         workflow from the beginning using the initial data. In this case, it stops when the
         maximum number of attempts is reached.
         """
-        action_data = data
+        output = data
+        self.current_action = self.create_action(self.config[ActionManager.INITIAL_ACTION])
         try:
             while True:
-                action_data = self.current_action.run(action_data)
-                next_action_name = self.current_action.get_next_action()
+                output = self.current_action.run(output)
+                next_action_name = output[ActionManager.NEXT_ACTION]
                 if not next_action_name:
                     break
-
+                
                 self.current_action = self.create_action(self.config[next_action_name])
             return True
         except KeyError:
@@ -62,32 +60,20 @@ class ActionManager:
         except ActionError as error:
             raise error
         except Exception:
-            if self.current_attempt == self.max_attempts:
-                return False
-            else:
-                self.re_attempt_workflow(data)
-
-    def re_attempt_workflow(self, data):
-        """
-        Increments the current attempt and runs workflow again.
-        """
-        self.current_attempt += 1
-        self.run_workflow(data)
+            return False
     
-    def create_action(self, action_name):
+    def create_action(self, action_metadata):
         """
         Returns a new object matching the given action's metadata.
         An ActionManagerError is thrown if can't create action instance.
         """
-        if not self.config.get(action_name):
-            raise ActionManagerError(f"No metadata found for name {action_name}")
         try:
             action = ActionFactory.create_action(
-                self.config[action_name][ActionManager.MODULE], 
-                self.config[action_name][ActionManager.CLASS], 
-                self.config[action_name][ActionManager.CONFIG]
+                action_metadata[ActionManager.MODULE], 
+                action_metadata[ActionManager.CLASS], 
+                action_metadata[ActionManager.CONFIG]
             )
         except:
-            raise ActionManagerError(f"Error while creating action instance {self.config[action_name]}")
+            raise ActionManagerError(f"Error while creating action instance using {action_metadata}")
         
         return action
