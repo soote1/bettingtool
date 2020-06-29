@@ -33,13 +33,29 @@
                             "max_attempts":2,
                             "initial_action":{
                                 "module":"processor.sample.arbitragebetting.actions",
-                                "class":"DuplicateFilter",
+                                "class":"DeserializeJsonAction",
                                 "config":{"next_action":"incomplete_scores_filter"}
                             },
                             "incomplete_scores_filter":{
                                 "module":"processor.sample.arbitragebetting.actions",
                                 "class":"IncompleteScoresFilter",
-                                "config":{"next_action":""}
+                                "config":{
+                                    "target_scores":["0-0","1-0","0-1","1-1","2-0","0-2","2-1","1-2","2-2","3-0","0-3","3-1","1-3","3-2","2-3","3-3"],
+                                    "next_action":"search_optimal_solutions_action"
+                                }
+                            },
+                            "search_optimal_solutions_action":{
+                                "module":"processor.sample.arbitragebetting.actions",
+                                "class":"SearchOptimalWagerSetAction",
+                                "config":{
+                                    "max_budget":10000,
+                                    "gene_domain":[200, 600],
+                                    "population_size":20,
+                                    "mutation_rate":0.01,
+                                    "gene_count":16,
+                                    "max_iterations":100,
+                                    "next_action":""
+                                }
                             }
                         }
                     ]
