@@ -94,11 +94,19 @@ def worker_manager_config_invalid_worker_metadata():
     }
 
 class ActionMock(BaseAction):
+    def __init__(self, config):
+        super().__init__(config)
+
     def run(self, data):
+        data["next_action"] = self.config["next_action"]
         return data
 
 class AnotherActionMock(BaseAction):
+    def __init__(self, config):
+        super().__init__(config)
+
     def run(self, data):
+        data["next_action"] = self.config["next_action"]
         return data
 
 class ExceptionAction(BaseAction):
@@ -110,15 +118,14 @@ class ReAttemptAction(BaseAction):
         raise Exception("Some error")
 
 def sample_config():
-    return {"some_key":"some_value"}
+    return {"some_key":"some_value", "next_action":""}
 
 @pytest.fixture
 def action_metadata_mock():
     return {
         "module":"pythontools.tests.conftest",
         "class":"ActionMock",
-        "config":{"some_key":"some_value"},
-        "next_action":""
+        "config":{"some_key":"some_value", "next_action":""}
     }
 
 @pytest.fixture
@@ -128,7 +135,6 @@ def action_object_mock():
 @pytest.fixture
 def action_manager_config_mock():
     return {
-        "max_attempts":2,
         "initial_action":{
             "module":"pythontools.tests.conftest",
             "class":"ActionMock",
@@ -144,7 +150,6 @@ def action_manager_config_mock():
 @pytest.fixture
 def action_manager_config_exception_mock():
     return {
-        "max_attempts":2,
         "initial_action":{
             "module":"pythontools.tests.conftest",
             "class":"ExceptionAction",
@@ -155,7 +160,6 @@ def action_manager_config_exception_mock():
 @pytest.fixture
 def action_manager_config_reattempt_mock():
     return {
-        "max_attempts":2,
         "initial_action":{
             "module":"pythontools.tests.conftest",
             "class":"ReAttemptAction",
