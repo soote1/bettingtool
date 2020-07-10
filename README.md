@@ -4,7 +4,7 @@ Table of Contents
 * [What is bettingtool?](#what-is-bettingtool)
 * [Supported Online Sports Betting Sites](#supported-online-sports-betting-sites)
 * [Installation Instructions](#installation-instructions)
-* [Running bettingtool](#installation-instructions)
+* [Running bettingtool](#running-bettingtool)
 * [Testing](#testing)
 * [Community and Contributing](#community-and-contributing)
 * [Directory Structure](#directory-structure)
