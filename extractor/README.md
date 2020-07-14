@@ -1,18 +1,28 @@
-# Extractor (Under development)
+# Extractor
 The extractor is a process manager that can:
-* Start a list of different worker types.
-* Stop the execution of a list of different worker types.
+* Create a set of objects recursively at runtime using reflection. These objects can represent a:
+    * Worker.
+    * Helper.
+    * Dictionary.
+* Create a list of processes and link them the corresponding worker object.
+* Start a list of processes and run forever.
+* Stop a list of processes when receiving a KeyboardInterrupt event.
+* Terminate a list of processes after receiving a KeyboardInterrupt event.
 
 The extractor is configurable, it uses a json config file to define the set of workers to be managed.
 
 The exctractor uses python's multiprocessing library to represent workers as different processes.
 
-Each worker can be of one of the following types:
-* **Url Seeder**: A stateful process that explores the betting websites to extract the odds URLs for each soccer match in a league.
+A worker can either be:
+* **Url Seeder**: A stateful process that explores the betting websites to extract the odds URLs for each game in a league.
+* **Url Consumer**: A process that establishes a connection with a messaging system, hangs on a specific queue and waits for a new message to arrive. When a new message arrives, this process uses a helper to extract the odds from the received url, and another helper to send the odds to a specific queue.
+
+A worker can use any of the following helpers:
 * **Odds Fetcher**: An object that can fetch a web page from an url, extract the odds for a specific game type and generate a parsed output.
-* **Url Consumer**: A process that establishes a connection with an URLs queue and waits for a new message to arrive. When a new message arrives, this process tells the fetcher to do his work and waits for the response. Once it gets a response from the fetcher, it sends a new message to the odds queue.
 * **Url producer**: An object that can send urls to an URLs queue.
 * **Odds producer**: An object that can send odds to an odds queue.
+
+See the [Extractor Design](https://github.com/soote1/bettingtool/wiki/Design-%7C-Extractor) for more details.
 
 ## Directory Structure
 ```python
@@ -20,14 +30,12 @@ Each worker can be of one of the following types:
 ├── sample             # main package
     ├── caliente       # modules for getting odds data from caliente web site
         ├── cache      # cache management for caliente workers
-        ├── model      # caliente models
         ├── workers    # caliente workers
     ├── common         # common utilities
         ├── cache      # classes for talking with redis
-        ├── messaging  # classes for talking with rabbitmq
-        ├── model      # classes for modeling odds data and workers
-    ├── driver         # runnable script
-    ├── manager        # process manager
+        ├── helpers    # helpers to be shared across packages
+        ├── model      # classes for modeling odds metadata
+    ├── main           # entry point
 ├── tests              # unit tests package (TBD)
 ```
 
