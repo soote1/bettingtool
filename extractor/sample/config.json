@@ -99,7 +99,7 @@
                     "odds_container_target":{"title":"Clic aquí para más apuestas"},
                     "odds_link_target":"href",
                     "html_parser":"lxml",
-                    "target_leagues":["La-Liga"],
+                    "target_leagues":["Premier-League"],
                     "url_delimiter":"/",
                     "target_games":[]
                 },
