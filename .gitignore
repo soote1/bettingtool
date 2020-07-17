@@ -5,3 +5,6 @@ __pycache__/
 .pytest_cache/
 .vscode/
 .cache
+node_modules
+.env
+dist
