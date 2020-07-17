@@ -56,7 +56,19 @@ Start the processor:
 python -m processor.sample.main
 ```
 
-Start the web app server. (Pending)
+Start the web app server:
+* Install dependencies first:
+```javascript
+npm install
+```
+* On a terminal:
+```javascript
+npm run webpack
+```
+* On a different terminal:
+```javascript
+npm start
+```
 
 Start the web app client. (Pending)
 
