@@ -1,0 +1,28 @@
+<div class="main-container mat-elevation-z8">
+    <div class="arbs-table-container">
+  
+      <table mat-table [dataSource]="data"
+             matSort matSortActive="created" matSortDisableClear matSortDirection="desc">
+        <!-- Label Column -->
+        <ng-container matColumnDef="label">
+          <th mat-header-cell *matHeaderCellDef>Label</th>
+          <td mat-cell *matCellDef="let row">{{row.label}}</td>
+        </ng-container>
+  
+        <!-- Odd Column -->
+        <ng-container matColumnDef="odd">
+          <th mat-header-cell *matHeaderCellDef>Odd</th>
+          <td mat-cell *matCellDef="let row">{{row.odd}}</td>
+        </ng-container>
+  
+        <!-- Wager Column -->
+        <ng-container matColumnDef="wager">
+          <th mat-header-cell *matHeaderCellDef>Wager</th>
+          <td mat-cell *matCellDef="let row">{{row.wager}}</td>
+        </ng-container>
+  
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>  
+  </div>

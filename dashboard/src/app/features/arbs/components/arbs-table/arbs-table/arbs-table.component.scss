@@ -1,0 +1,25 @@
+/* Structure */
+.main-container {
+    position: relative;
+    min-height: 200px;
+  }
+  
+  .arbs-table-container {
+    position: relative;
+    max-height: 400px;
+    overflow: auto;
+  }
+  
+  table {
+    width: 100%;
+  }
+  
+  /* Column Widths */
+  .mat-column-odd,
+  .mat-column-wager {
+    max-width: 64px;
+  }
+  
+  .mat-column-label {
+    max-width: 124px;
+  }
