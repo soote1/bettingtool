@@ -36,6 +36,7 @@ Currently, there are 6 active branches in the repository:
 * feature/processor
 * feature/pythontools
 * feature/server
+* feature/dashboard
 
 Contributions for each component should be started from the corresponding branch. For example:
 * If you want to add support for a new online sports betting site, then you will need to create a new branch from the latest version of feature/extractor. 

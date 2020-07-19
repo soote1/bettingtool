@@ -56,7 +56,7 @@ Start the processor:
 python -m processor.sample.main
 ```
 
-Start the web app server:
+Start the server:
 * Install dependencies first:
 ```javascript
 npm install
@@ -70,7 +70,11 @@ npm run webpack
 npm start
 ```
 
-Start the web app client. (Pending)
+Start the dashboard:
+```javascript
+npm install
+ng serve
+```
 
 Testing
 ------
@@ -90,11 +94,11 @@ Contributions are welcome. Check out the [Contribution Guide](CONTRIBUTING.md).
 Directory Structure
 ------
 ```python
+├── dashboard                   # UI for monitoring the events produced by the processor.
 ├── extractor                   # Process manager for the web crawlers.
 ├── processor                   # Process manager for the processing enginges.
 ├── pythontools                 # Common logic for the extractor and the processor.
 ├── server                      # Http server for pushing real-time data to the UI.
-├── web_app_UI                  # UI to visualize the events produced by the processor.
 ```
 
 Licensing
