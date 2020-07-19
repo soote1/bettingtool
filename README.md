@@ -93,7 +93,7 @@ Directory Structure
 ├── extractor                   # Process manager for the web crawlers.
 ├── processor                   # Process manager for the processing enginges.
 ├── pythontools                 # Common logic for the extractor and the processor.
-├── web_app_server              # Http server for pushing real-time data to the UI.
+├── server                      # Http server for pushing real-time data to the UI.
 ├── web_app_UI                  # UI to visualize the events produced by the processor.
 ```
 
