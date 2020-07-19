@@ -20,6 +20,6 @@ export default class ArbsListener implements IListenerBase {
 
     handleMessages(message, arbsEventEmitter) {
         console.log('[ArbsListener] arbs received');
-        arbsEventEmitter.emit('arbs-received', 'some-event', message.content.toString());
+        arbsEventEmitter.emit('arbs-received', 'arb-found', message.content.toString());
     }
 }
