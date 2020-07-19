@@ -16,11 +16,6 @@ export default class App {
         this.app = express();
         this.port = appConfig.port;
 
-        // TODO: remove this when client project exists
-        this.app.get('/', (req, res) => {
-            res.status(200).send('x');
-        });
-
         this.loadControllers(appConfig.controllers);
         this.loadMiddlewares(appConfig.middlewares);
         this.startListeners(appConfig.listeners);
