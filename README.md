@@ -32,13 +32,18 @@ Support for more online sports betting sites coming soon.
 
 Installation Instructions
 ------
+Docker Compose:
+```bash
+docker-compose build
+docker-compose up
+```
+
+Manual installation:
 * Install RabbitMQ (extractor, processor, web app server, pythontools): https://www.rabbitmq.com/download.html
 * Install Redis (extractor): https://redis.io/download
 * Install Python 3 (extractor, processor, pythontools): https://www.python.org/downloads/
 * Install pipenv (extractor, processor, pythontools): https://pipenv-fork.readthedocs.io/en/latest/install.html#installing-pipenv
 * Install NodeJs and NPM (web app server): https://nodejs.org/es/
-
-Docker file coming soon.
 
 Running bettingtool
 ------
