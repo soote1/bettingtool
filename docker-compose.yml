@@ -1,0 +1,49 @@
+version: "3.7"
+services:
+    redis:
+        image: "redis:alpine"
+        ports:
+            - 6379:6379
+    rabbitmq:
+        image: "rabbitmq:3.8.3-management"
+        ports:
+            - 5672:5672   # The standard AMQP protocol port
+            - 15672:15672 # HTTP management UI
+    extractor:
+        build: 
+            context: .
+            dockerfile: ./extractor/Dockerfile
+        container_name: extractor
+        depends_on: 
+            - "rabbitmq"
+        command: ["./wait-for-it.sh", "rabbitmq:5672", "--", "python", "-m", "extractor.sample.main"]
+        network_mode: host
+    processor:
+        build: 
+            context: .
+            dockerfile: ./processor/Dockerfile
+        container_name: processor
+        depends_on: 
+            - "rabbitmq"
+        command: ["./wait-for-it.sh", "rabbitmq:5672", "--", "python", "-m", "processor.sample.main"]
+        network_mode: host
+    server:
+        build: 
+            context: .
+            dockerfile: ./server/Dockerfile
+        ports:
+            - 3000:3000
+        depends_on: 
+            - "rabbitmq"
+        command: ["./wait-for-it.sh", "rabbitmq:5672", "--", "npm", "run", "build-and-start"]
+        network_mode: host
+    dashboard:
+        build:
+            context: .
+            dockerfile: ./dashboard/Dockerfile
+        ports:
+            - 4200:4200
+        depends_on: 
+            - "server"
+        command: ["./wait-for-it.sh", "server:3000", "--", "npm", "run", "ng", "serve"]
+        network_mode: host
