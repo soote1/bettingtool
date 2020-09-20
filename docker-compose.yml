@@ -37,3 +37,13 @@ services:
             - "rabbitmq"
         command: ["./wait-for-it.sh", "rabbitmq:5672", "--", "npm", "run", "build-and-start"]
         network_mode: host
+    dashboard:
+        build:
+            context: .
+            dockerfile: ./dashboard/Dockerfile
+        ports:
+            - 4200:4200
+        depends_on: 
+            - "server"
+        command: ["./wait-for-it.sh", "server:3000", "--", "npm", "run", "ng", "serve"]
+        network_mode: host
