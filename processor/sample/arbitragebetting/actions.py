@@ -3,6 +3,7 @@ from multiprocessing import get_logger
 
 from pythontools.actionmanager.actions import BaseAction
 from pythontools.evoalgorithms.multiobjective import NSGAII
+from processor.sample.arbitragebetting.util import OutcomeProducer
 
 class DeserializeJsonAction(BaseAction):
     """
@@ -159,3 +160,26 @@ class SearchOptimalWagerSetAction(BaseAction):
         for wager in wagers:
             required_budget = required_budget + wager
         return required_budget/max_budget
+
+class EnqueueMessageAction(BaseAction):
+    QUEUE_NAME = "queue_name"
+    PRODUCER_CONFIG = "producer_config"
+    OPTIMAL_WAGERS = "optimal_wagers"
+    NEXT_ACTION = "next_action"
+
+    def __init__(self, config):
+        super().__init__(config)
+        self.logger = get_logger()
+        self.load_config()
+
+    def load_config(self):
+        self.logger.info(f"loading config for {self.__class__.__name__}")
+        self.producer_config = self.config[self.PRODUCER_CONFIG]
+        self.next_action = self.config[self.NEXT_ACTION]
+
+    def run(self, data):
+        self.logger.info(f"creating producer with config => {self.producer_config}")
+        producer = OutcomeProducer(self.producer_config)
+        producer.produce(data[self.OPTIMAL_WAGERS])
+        data[self.NEXT_ACTION] = self.next_action
+        return data
