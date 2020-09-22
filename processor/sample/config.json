@@ -13,19 +13,6 @@
                     "decode_format":"utf-8"
                 },
                 {
-                    "module":"processor.sample.arbitragebetting.workers",
-                    "class":"OutcomeProducer",
-                    "args":[
-                        {
-                            "host_name":"localhost",
-                            "queue_name":"arbitrage_outcomes_queue",
-                            "durable":true,
-                            "delivery_mode":2,
-                            "exchange":""
-                        }
-                    ]
-                },
-                {
                     "module":"pythontools.actionmanager.manager",
                     "class":"ActionManager",
                     "args":[
@@ -54,6 +41,20 @@
                                     "mutation_rate":0.01,
                                     "gene_count":16,
                                     "max_iterations":100,
+                                    "next_action":"enqueue_message_action"
+                                }
+                            },
+                            "enqueue_message_action":{
+                                "module":"processor.sample.arbitragebetting.actions",
+                                "class":"EnqueueMessageAction",
+                                "config":{
+                                    "producer_config": {
+                                        "host_name":"localhost",
+                                        "queue_name":"arbitrage_outcomes_queue",
+                                        "durable":true,
+                                        "delivery_mode":2,
+                                        "exchange":""
+                                    },
                                     "next_action":""
                                 }
                             }
